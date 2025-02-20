@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "library-system"
+version = "0.1.0"
+description = """The system for managing its book stock. In order to properly manage this library, system users must be able to : \
+- Add, modify and delete authors \
+- Add, modify and delete books \
+- Manage book loans and stock \
+"""
+authors = ["krishnaraj <krishna.radje@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.8"
+sqlmodel = "^0.0.22"
+alembic = "^1.14.1"
+python-json-logger = "^3.2.1"
+jinja2 = "^3.1.5"
+pyaml = "^25.1.0"
+uvicorn = "^0.34.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+mypy = "^1.15.0"
+ruff = "^0.9.7"
+httpx = "^0.28.1"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
