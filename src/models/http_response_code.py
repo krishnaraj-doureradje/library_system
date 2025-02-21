@@ -5,6 +5,7 @@ class HTTPResponseCode:
     """App HTTPResponseCode Model."""
 
     OK = status.HTTP_200_OK
+    UNAUTHORIZED = status.HTTP_401_UNAUTHORIZED
     CREATED = status.HTTP_201_CREATED
     NO_CONTENT = status.HTTP_204_NO_CONTENT
     BAD_REQUEST = status.HTTP_400_BAD_REQUEST

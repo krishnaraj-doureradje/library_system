@@ -7,8 +7,9 @@ from sqlmodel import Field, SQLModel
 class AdminUser(SQLModel, table=True):
     """Model for admin users with authentication."""
 
+    __tablename__ = "admin_user"
     id: int | None = Field(default=None, primary_key=True)
-    user_id: int = Field(nullable=False, max_length=255, index=True)
+    user_id: str = Field(nullable=False, max_length=255, index=True, unique=True)
     password: str = Field(nullable=False, max_length=255)
     created_at: datetime = Field(
         sa_column=Column(
@@ -20,7 +21,4 @@ class AdminUser(SQLModel, table=True):
 
     def __repr__(self) -> str:
         """String representation for debugging/logging."""
-        return (
-            f"<AdminUser(id={self.id}, user_id={self.user_id},"
-            f"created_at={self.created_at})>"
-        )
+        return f"<AdminUser(id={self.id}, user_id={self.user_id},created_at={self.created_at})>"

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from src.db.engine import db_dependency
 from src.db.operation import (
@@ -10,14 +10,16 @@ from src.models.author import (
 )
 from src.models.error_response import ErrorResponse
 from src.models.http_response_code import HTTPResponseCode
+from src.utils.security import user_is_authenticated
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(user_is_authenticated)])
 
 
 @router.post(
     "/authors",
     response_model=AuthorOut,
     responses={
+        "401": {"model": ErrorResponse},
         "500": {"model": ErrorResponse},
     },
     summary="To create a new author.",

@@ -26,9 +26,7 @@ class AppException(Exception):
 
     def log_exception(self) -> None:
         """Logs the exception."""
-        self.logger.error(
-            msg=self.message, exc_info=True, extra={"error": self.to_dict()}
-        )
+        self.logger.error(msg=self.message, exc_info=True, extra={"error": self.to_dict()})
 
     def to_dict(self) -> dict[str, str]:
         """Converts the exception to a dictionary.
@@ -62,5 +60,11 @@ class NotFoundException(AppException):
 
 class BadRequestException(AppException):
     """BadRequestException base class"""
+
+    pass
+
+
+class AuthenticationException(AppException):
+    """AuthenticationException base class"""
 
     pass

@@ -11,9 +11,7 @@ def load_settings(filename: str) -> dict[str, Any]:
 
     def load_jinja_template(jinja_filepath: str) -> str:
         """Load a jinja template file."""
-        with open(
-            file=os.path.realpath(jinja_filepath), mode="r", encoding="utf-8"
-        ) as fd:
+        with open(file=os.path.realpath(jinja_filepath), mode="r", encoding="utf-8") as fd:
             data = fd.read()
             template = jinja2.Environment(loader=jinja2.BaseLoader()).from_string(data)
             return template.render(env=os.environ)

@@ -15,9 +15,7 @@ class AuthorBase(BaseModel):
     )
     last_name: str = Field(..., min_length=1, max_length=100, title="Last Name")
     birth_date: datetime | None = None
-    nationality: str | None = Field(
-        default=None, min_length=3, max_length=3, title="Nationality"
-    )
+    nationality: str | None = Field(default=None, min_length=3, max_length=3, title="Nationality")
 
     model_config = ConfigDict(
         json_schema_extra={
