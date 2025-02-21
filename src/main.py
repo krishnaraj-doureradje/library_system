@@ -11,6 +11,7 @@ from src.db.engine import get_db_engine
 from src.exceptions.app import AppException
 from src.helper.logging import init_loggers
 from src.models.http_response_code import HTTPResponseCode
+from src.router.author import router as author_router
 from src.router.books import router as books_router
 from src.router.docs import router as docs_router
 from src.router.health import router as health_router
@@ -66,6 +67,8 @@ async def exception_handler(_request: Request, exc: Exception) -> JSONResponse:
     return ex.to_json_response()
 
 
+# Manually add all routers to the FastApi application
 app.include_router(docs_router)
 app.include_router(health_router)
 app.include_router(books_router)
+app.include_router(author_router)
