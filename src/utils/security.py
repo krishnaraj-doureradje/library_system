@@ -1,9 +1,9 @@
+import hashlib
 import secrets
 from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from passlib.context import CryptContext
 
 from src.constants.security import PASSWORD_MIN_LEN
 from src.db.engine import db_dependency
@@ -11,7 +11,6 @@ from src.db.operation import get_admin_user
 from src.exceptions.app import AuthenticationException
 from src.models.http_response_code import HTTPResponseCode
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBasic()
 
 
@@ -28,9 +27,11 @@ def hash_password(password: str) -> str:
         ValueError: If the password is empty or too short
     """
     if not password or len(password) < PASSWORD_MIN_LEN:
-        raise ValueError("Password must be at least 6 characters long")
+        raise ValueError("Password must be at least 8 characters long")
 
-    return pwd_context.hash(password)
+    sha256_hash = hashlib.sha256()
+    sha256_hash.update(password.encode("utf-8"))
+    return sha256_hash.hexdigest()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -43,8 +44,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         bool: True if the plain-text password matches the hash, False otherwise.
     """
-
-    return pwd_context.verify(plain_password, hashed_password)
+    return hash_password(plain_password) == hashed_password
 
 
 def user_is_authenticated(
