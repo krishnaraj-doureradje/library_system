@@ -1,8 +1,8 @@
 """Create admin_user and author tables
 
-Revision ID: 8e626e1bdb72
+Revision ID: b213d1b726df
 Revises:
-Create Date: 2025-02-21 16:10:53.769001
+Create Date: 2025-02-22 08:43:07.335452
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "8e626e1bdb72"
+revision: str = "b213d1b726df"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,12 +24,8 @@ def upgrade() -> None:
     op.create_table(
         "admin_user",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "user_id", sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False
-        ),
-        sa.Column(
-            "password", sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False
-        ),
+        sa.Column("user_id", sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
+        sa.Column("password", sqlmodel.sql.sqltypes.AutoString(length=255), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(),
@@ -38,22 +34,14 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_admin_user_user_id"), "admin_user", ["user_id"], unique=True
-    )
+    op.create_index(op.f("ix_admin_user_user_id"), "admin_user", ["user_id"], unique=True)
     op.create_table(
         "author",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "first_name", sqlmodel.sql.sqltypes.AutoString(length=100), nullable=False
-        ),
-        sa.Column(
-            "last_name", sqlmodel.sql.sqltypes.AutoString(length=100), nullable=False
-        ),
-        sa.Column("birth_date", sa.DateTime(), nullable=True),
-        sa.Column(
-            "nationality", sqlmodel.sql.sqltypes.AutoString(length=3), nullable=True
-        ),
+        sa.Column("first_name", sqlmodel.sql.sqltypes.AutoString(length=100), nullable=False),
+        sa.Column("last_name", sqlmodel.sql.sqltypes.AutoString(length=100), nullable=False),
+        sa.Column("birth_date", sa.Date(), nullable=False),
+        sa.Column("nationality", sqlmodel.sql.sqltypes.AutoString(length=3), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(),
@@ -67,10 +55,11 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "first_name", "last_name", "birth_date", name="uq_author_name_birthdate"
+        ),
     )
-    op.create_index(
-        op.f("ix_author_first_name"), "author", ["first_name"], unique=False
-    )
+    op.create_index(op.f("ix_author_first_name"), "author", ["first_name"], unique=False)
     op.create_index(op.f("ix_author_id"), "author", ["id"], unique=False)
     op.create_index(op.f("ix_author_last_name"), "author", ["last_name"], unique=False)
     # ### end Alembic commands ###

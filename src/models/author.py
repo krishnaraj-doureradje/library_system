@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
@@ -14,7 +14,7 @@ class AuthorBase(BaseModel):
         title="First Name",
     )
     last_name: str = Field(..., min_length=1, max_length=100, title="Last Name")
-    birth_date: datetime | None = None
+    birth_date: date
     nationality: str | None = Field(default=None, min_length=3, max_length=3, title="Nationality")
 
     model_config = ConfigDict(
@@ -23,7 +23,7 @@ class AuthorBase(BaseModel):
                 {
                     "first_name": "John",
                     "last_name": "Doe",
-                    "birth_date": "1980-05-15T00:00:00",
+                    "birth_date": "1980-05-15",
                     "nationality": "USA",
                 }
             ]

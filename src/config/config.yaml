@@ -1,5 +1,5 @@
 environment: "{{env.get('PROGRAM_ENVIRONMENT', 'dev')}}"
-app_name: "{{env.get('APP_NAME', 'Descartes')}}"
+app_name: "{{env.get('APP_NAME', 'Library system')}}"
 
 fastapi:
   debug: {{env.get('FASTAPI_VERBOSE', False) | string | upper == "TRUE"}}
