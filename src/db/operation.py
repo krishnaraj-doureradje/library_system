@@ -12,6 +12,7 @@ from src.db.query import (
     get_book_count_stmt,
     get_book_stmt,
     get_books_stmt_with_limit_and_offset,
+    get_stock_book_stmt,
 )
 from src.exceptions.app import NotFoundException
 from src.helper.pagination import pagination_details
@@ -312,3 +313,45 @@ def create_stock_on_db(db_session: db_dependency, stock_in: StockIn) -> StockOut
     # Refresh the object after commit to get the primary key
     execute_all_query(db_session, [new_stock], is_commit=True, is_refresh_after_commit=True)
     return StockOut(**new_stock.model_dump())
+
+
+def get_stock_book_from_id(db_session: db_dependency, book_id: int) -> Stock:
+    """Get an stock based on the book id.
+
+    Args:
+        db_session (db_dependency):  Database session.
+        book_id (int): Stock id
+
+    Raises:
+        NotFoundException: Raised when the book_id is not found in the database.
+
+    Returns:
+        Stock: Stock details
+    """
+    stock_stmt = get_stock_book_stmt(book_id)
+    stock = fetch_one_or_none(db_session, stock_stmt)
+
+    if stock is None:
+        raise NotFoundException(
+            status_code=HTTPResponseCode.NOT_FOUND,
+            message=f"{book_id=} not found in the database",
+        )
+
+    return stock
+
+
+def get_stock_book_out_from_db(db_session: db_dependency, book_id: int) -> StockOut:
+    """Get StockOut model response.
+
+    Args:
+        db_session (db_dependency): Database session.
+        book_id (int): Book id.
+
+    Returns:
+        StockOut: Stock details details.
+    """
+    db_stock = get_stock_book_from_id(db_session, book_id)
+    stock_data = db_stock.model_dump()
+    book_data = db_stock.book.model_dump()
+    combined_data = stock_data | book_data
+    return StockOut(**combined_data)

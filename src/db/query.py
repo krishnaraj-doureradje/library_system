@@ -5,6 +5,7 @@ from sqlmodel.sql._expression_select_cls import SelectOfScalar
 from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
 from src.db.models.book import Book
+from src.db.models.stock import Stock
 
 
 def get_admin_user_stmt(user_id: str) -> SelectOfScalar[AdminUser]:
@@ -91,4 +92,17 @@ def get_books_stmt_with_limit_and_offset(*, offset: int, limit: int) -> SelectOf
         SelectOfScalar[Book]: Select statement for all books.
     """
     stmt = select(Book).limit(limit).offset(offset).order_by(Book.id.asc())  # type: ignore
+    return stmt
+
+
+def get_stock_book_stmt(book_id: int) -> SelectOfScalar[Stock]:
+    """This function returns a select statement to get the Stock.
+
+    Args:
+        book_id (int): The book_id to get from DB.
+
+    Returns:
+        SelectOfScalar[Stock]: Select statement for Stock.
+    """
+    stmt = select(Stock).where(Stock.book_id == book_id)
     return stmt

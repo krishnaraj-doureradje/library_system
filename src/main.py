@@ -44,7 +44,7 @@ system users must be able to :
 
 - Add, modify and delete authors
 - Add, modify and delete books
-- Manage book loans and stock"""
+- Manage stocks and reservations"""
 
 app = FastAPI(
     title="Create a simple application to manage municipal library system.",

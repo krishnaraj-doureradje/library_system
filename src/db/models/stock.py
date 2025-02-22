@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, func
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Stock(SQLModel, table=True):
@@ -25,3 +25,4 @@ class Stock(SQLModel, table=True):
             nullable=False,
         ),
     )
+    book: "Book" = Relationship(back_populates="stock")  # type: ignore  # noqa: F821

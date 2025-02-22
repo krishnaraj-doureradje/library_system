@@ -22,3 +22,10 @@ class StockOut(StockBase):
         ...,
         description="Created stock ID",
     )
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=100,
+        title="Book title",
+    )
+    category: str | None = Field(default=None, max_length=100)
