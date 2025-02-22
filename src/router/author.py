@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Path
 from src.db.engine import db_dependency
 from src.db.operation import (
     create_author_on_db,
-    get_author_from_id,
+    get_author_out_from_db,
     get_authors_with_offset_and_limit,
     update_author_on_db,
 )
@@ -58,7 +58,7 @@ async def get_author(
         examples=[1],
     ),
 ) -> AuthorOut | ErrorResponse:
-    author_out = get_author_from_id(db_session, author_id)
+    author_out = get_author_out_from_db(db_session, author_id)
     return author_out
 
 

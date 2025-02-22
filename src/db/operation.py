@@ -8,11 +8,14 @@ from src.db.query import (
     get_author_count_stmt,
     get_author_stmt,
     get_authors_stmt_with_limit_and_offset,
+    get_book_count_stmt,
+    get_book_stmt,
+    get_books_stmt_with_limit_and_offset,
 )
 from src.exceptions.app import NotFoundException
 from src.helper.pagination import pagination_details
 from src.models.author import AuthorIn, AuthorOut, AuthorsList
-from src.models.book import BookIn, BookOut
+from src.models.book import BookIn, BookOut, BooksList
 from src.models.http_response_code import HTTPResponseCode
 
 
@@ -47,7 +50,7 @@ def get_admin_user(db_session: db_dependency, user_id: str) -> AdminUser | None:
     return admin_user
 
 
-def get_author_from_id(db_session: db_dependency, author_id: int) -> AuthorOut:
+def get_author_from_id(db_session: db_dependency, author_id: int) -> Author:
     """Get an author based on the author id.
 
     Args:
@@ -58,7 +61,7 @@ def get_author_from_id(db_session: db_dependency, author_id: int) -> AuthorOut:
         NotFoundException: Raised when the author id is not found in the database.
 
     Returns:
-        AuthorOut: Author details
+        Author: Author details
     """
     author_stmt = get_author_stmt(author_id)
     author = fetch_one_or_none(db_session, author_stmt)
@@ -70,6 +73,20 @@ def get_author_from_id(db_session: db_dependency, author_id: int) -> AuthorOut:
         )
 
     return author
+
+
+def get_author_out_from_db(db_session: db_dependency, author_id: int) -> AuthorOut:
+    """Get AuthorOut model response.
+
+    Args:
+        db_session (db_dependency): Database session.
+        author_id (int): Author id.
+
+    Returns:
+        AuthorOut: Author details.
+    """
+    db_author = get_author_from_id(db_session, author_id)
+    return AuthorOut(**db_author.model_dump())
 
 
 def get_authors_with_offset_and_limit(
@@ -144,7 +161,7 @@ def update_author_on_db(
     # making a select request to the database.
     execute_all_query(
         db_session,
-        [db_author],
+        [db_author],  # type: ignore
     )
     return author_out
 
@@ -159,7 +176,121 @@ def create_book_on_db(db_session: db_dependency, book_in: BookIn) -> BookOut:
     Returns:
         BookOut: Book details with ID
     """
-    new_author = Book(**book_in.model_dump())
+    new_book = Book(**book_in.model_dump())
     # Refresh the object after commit to get the primary key
-    execute_all_query(db_session, [new_author], is_commit=True, is_refresh_after_commit=True)
-    return BookOut(**new_author.model_dump())
+    execute_all_query(db_session, [new_book], is_commit=True, is_refresh_after_commit=True)
+    return BookOut(**new_book.model_dump())
+
+
+def get_book_from_id(db_session: db_dependency, book_id: int) -> Book:
+    """Get a book based on the book id.
+
+    Args:
+        db_session (db_dependency):  Database session.
+        book_id (int): Book id
+
+    Raises:
+        NotFoundException: Raised when the book id is not found in the database.
+
+    Returns:
+        Book: Book details
+    """
+    book_stmt = get_book_stmt(book_id)
+    book = fetch_one_or_none(db_session, book_stmt)
+
+    if book is None:
+        raise NotFoundException(
+            status_code=HTTPResponseCode.NOT_FOUND,
+            message=f"{book_id=} not found in the database",
+        )
+
+    return book
+
+
+def get_book_out_from_db(db_session: db_dependency, book_id: int) -> BookOut:
+    """Get book based on the book id.
+
+    Args:
+        db_session (db_dependency): Database session.
+        book_id (int): Book id.
+
+    Returns:
+        BookOut: Book details.
+    """
+    db_book = get_book_from_id(db_session, book_id)
+    return BookOut(**db_book.model_dump())
+
+
+def get_books_with_offset_and_limit(
+    db_session: db_dependency, *, offset: int, limit: int
+) -> BooksList:
+    """Get all books with pagination.
+
+    Args:
+        db_session (db_dependency): Database session.
+        offset (int): Offset value.
+        limit (int): Limit value.
+
+    Returns:
+        BooksList: List of books.
+    """
+    books_count_stmt = get_book_count_stmt()
+    books_count = fetch_one_or_none(db_session, books_count_stmt)  # type: ignore
+
+    # There is nothing to fetch if the books_count is None
+    if books_count is None:
+        return BooksList(
+            books=[],
+            number_of_books=0,
+            number_of_pages=0,
+            current_page=0,
+            next_page=None,
+            previous_page=None,
+        )
+
+    books_stmt = get_books_stmt_with_limit_and_offset(offset=offset, limit=limit)
+    books = [BookOut(**book.model_dump()) for book in fetch_all(db_session, books_stmt)]
+
+    # Calculate the number of pages, current page, next page, and previous page
+    number_of_pages, current_page, next_page, previous_page = pagination_details(
+        offset=offset, limit=limit, counts=books_count
+    )
+
+    return BooksList(
+        books=books,
+        number_of_books=books_count,
+        number_of_pages=number_of_pages,
+        current_page=current_page,
+        next_page=next_page,
+        previous_page=previous_page,
+    )
+
+
+def update_book_on_db(db_session: db_dependency, book_id: int, book_in: BookIn) -> BookOut:
+    """Update a book based on the book id.
+
+    Args:
+        db_session (db_dependency): Database session.
+        book_id (int): Book id.
+        book_in (BookIn): Book details.
+
+    Raises:
+        NotFoundException: Raised when the book id is not found in the database.
+
+    Returns:
+        BookOut: Updated book details.
+    """
+    db_book = get_book_from_id(db_session, book_id)
+
+    # Update the Book fields with the new values
+    for field, value in book_in.model_dump().items():
+        setattr(db_book, field, value)
+
+    book_out = BookOut(**db_book.model_dump())
+    # We don't need to refresh the object for the update operation, so we can avoid
+    # making a select request to the database.
+    execute_all_query(
+        db_session,
+        [db_book],  # type: ignore
+    )
+    return book_out

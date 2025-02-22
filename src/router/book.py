@@ -3,14 +3,11 @@ from fastapi import APIRouter, Depends, Path
 from src.db.engine import db_dependency
 from src.db.operation import (
     create_book_on_db,
-    get_author_from_id,
-    get_authors_with_offset_and_limit,
-    update_author_on_db,
+    get_book_out_from_db,
+    get_books_with_offset_and_limit,
+    update_book_on_db,
 )
 from src.helper.pagination import pager_params_dependency
-from src.models.author import (
-    AuthorOut,
-)
 from src.models.book import BookIn, BookOut, BooksList
 from src.models.error_response import ErrorResponse
 from src.models.http_response_code import HTTPResponseCode
@@ -33,9 +30,9 @@ router = APIRouter(dependencies=[Depends(user_is_authenticated)])
 async def create_book(
     db_session: db_dependency,
     book_in: BookIn,
-) -> AuthorOut | ErrorResponse:
-    new_author = create_book_on_db(db_session, book_in)
-    return new_author
+) -> BookOut | ErrorResponse:
+    new_book = create_book_on_db(db_session, book_in)
+    return new_book
 
 
 @router.get(
@@ -57,8 +54,8 @@ async def get_book(
         examples=[1],
     ),
 ) -> BookOut | ErrorResponse:
-    author_out = get_author_from_id(db_session, book_id)
-    return author_out
+    book_out = get_book_out_from_db(db_session, book_id)
+    return book_out
 
 
 @router.get(
@@ -75,7 +72,7 @@ async def get_all_books(
     db_session: db_dependency,
     pager_params: pager_params_dependency,
 ) -> BooksList | ErrorResponse:
-    books = get_authors_with_offset_and_limit(
+    books = get_books_with_offset_and_limit(
         db_session,
         offset=pager_params["skip"],
         limit=pager_params["limit"],
@@ -99,7 +96,7 @@ async def update_book(
     book_in: BookIn,
     book_id: int = Path(..., title="Book ID", examples=[1]),
 ) -> BookOut | ErrorResponse:
-    updated_author = update_author_on_db(db_session, book_id, book_in)
+    updated_author = update_book_on_db(db_session, book_id, book_in)
     return updated_author
 
 
@@ -115,7 +112,7 @@ async def update_book(
 )
 async def delete_book(
     db_session: db_dependency,
-    book8id: int = Path(
+    book_id: int = Path(
         ...,
         title="Book ID",
         examples=[1],

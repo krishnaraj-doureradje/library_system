@@ -6,7 +6,7 @@ fastapi:
 
 authentication:
   basic:
-    enable: {{env.get('BASIC_AUTH_ENABLE', False) | string | upper == "TRUE"}} 
+    enable: {{env.get('BASIC_AUTH_ENABLE', True)}} 
 
 logging:
   version: 1
