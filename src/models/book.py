@@ -23,7 +23,7 @@ class BookBase(BaseModel):
             "examples": [
                 {
                     "title": "Pride and Prejudice",
-                    "author_id": 12,
+                    "author_id": 1,
                     "published_date": "1980-05-15",
                 }
             ]
