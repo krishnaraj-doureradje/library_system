@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from src.db.models import admin_user, author  # noqa # pylint: disable=unused-import
+from src.db.models import admin_user, author, book  # noqa # pylint: disable=unused-import
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
