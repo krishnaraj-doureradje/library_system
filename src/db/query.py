@@ -132,7 +132,7 @@ def get_stocks_stmt_with_limit_and_offset(*, offset: int, limit: int) -> SelectO
     return stmt
 
 
-def delete_author_from_id(author_id: int) -> Delete:
+def delete_author_from_id_stmt(author_id: int) -> Delete:
     """This function return delete author statement
 
     Args:
@@ -145,7 +145,7 @@ def delete_author_from_id(author_id: int) -> Delete:
     return stmt
 
 
-def delete_book_from_id(author_id: int) -> Delete:
+def delete_book_from_id_stmt(author_id: int) -> Delete:
     """This function return delete book statement
 
     Args:

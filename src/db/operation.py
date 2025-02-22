@@ -5,8 +5,8 @@ from src.db.models.author import Author
 from src.db.models.book import Book
 from src.db.models.stock import Stock
 from src.db.query import (
-    delete_author_from_id,
-    delete_book_from_id,
+    delete_author_from_id_stmt,
+    delete_book_from_id_stmt,
     get_admin_user_stmt,
     get_author_count_stmt,
     get_author_stmt,
@@ -316,7 +316,15 @@ def create_stock_on_db(db_session: db_dependency, stock_in: StockIn) -> StockOut
     new_stock = Stock(**stock_in.model_dump())
     # Refresh the object after commit to get the primary key
     execute_all_query(db_session, [new_stock], is_commit=True, is_refresh_after_commit=True)
-    return StockOut(**new_stock.model_dump())
+    stock_data = new_stock.model_dump()
+    book_data = new_stock.book.model_dump()
+    return StockOut(
+        book_id=stock_data["book_id"],
+        stock_quantity=stock_data["stock_quantity"],
+        id=stock_data["id"],
+        title=book_data["title"],
+        category=book_data["category"],
+    )
 
 
 def get_stock_book_from_id(db_session: db_dependency, book_id: int) -> Stock:
@@ -357,8 +365,13 @@ def get_stock_book_out_from_db(db_session: db_dependency, book_id: int) -> Stock
     db_stock = get_stock_book_from_id(db_session, book_id)
     stock_data = db_stock.model_dump()
     book_data = db_stock.book.model_dump()
-    combined_data = stock_data | book_data
-    return StockOut(**combined_data)
+    return StockOut(
+        book_id=stock_data["book_id"],
+        stock_quantity=stock_data["stock_quantity"],
+        id=stock_data["id"],
+        title=book_data["title"],
+        category=book_data["category"],
+    )
 
 
 def get_stocks_with_offset_and_limit(
@@ -393,8 +406,15 @@ def get_stocks_with_offset_and_limit(
     for db_stock in fetch_all(db_session, stocks_stmt):
         stock_data = db_stock.model_dump()
         book_data = db_stock.book.model_dump()
-        combined_data = stock_data | book_data
-        stocks.append(StockOut(**combined_data))
+        stocks.append(
+            StockOut(
+                book_id=stock_data["book_id"],
+                stock_quantity=stock_data["stock_quantity"],
+                id=stock_data["id"],
+                title=book_data["title"],
+                category=book_data["category"],
+            )
+        )
 
     # Calculate the number of pages, current page, next page, and previous page
     number_of_pages, current_page, next_page, previous_page = pagination_details(
@@ -433,8 +453,13 @@ def add_new_quantity_to_the_existing_stocks_on_db(
 
     stock_data = db_stock.model_dump()
     book_data = db_stock.book.model_dump()
-    combined_data = stock_data | book_data
-    stock_out = StockOut(**combined_data)
+    stock_out = StockOut(
+        book_id=stock_data["book_id"],
+        stock_quantity=stock_data["stock_quantity"],
+        id=stock_data["id"],
+        title=book_data["title"],
+        category=book_data["category"],
+    )
     # We don't need to refresh the object for the update operation, so we can avoid
     # making a select request to the database.
     execute_all_query(
@@ -467,8 +492,8 @@ def delete_author_on_db(
             message="Author's book present in the stocks",
         )
 
-    delete_books_stmt = delete_book_from_id(author_id)
-    delete_author_stmt = delete_author_from_id(author_id)
+    delete_books_stmt = delete_book_from_id_stmt(author_id)
+    delete_author_stmt = delete_author_from_id_stmt(author_id)
     delete_statement(db_session, delete_books_stmt, is_commit=False)
     delete_statement(db_session, delete_author_stmt, is_commit=True)
 
@@ -489,12 +514,12 @@ def delete_book_on_db(
         # Nothing to delete so don't raise exception
         return None
 
-    is_stock_present = any(book.stock for book in db_books.stock)
+    is_stock_present = any(stock for stock in db_books.stock)
     if is_stock_present:
         raise SqlException(
             status_code=HTTPResponseCode.FORBIDDEN,
             message="Author's book present in the stocks",
         )
 
-    delete_books_stmt = delete_book_from_id(author_id)
-    delete_statement(db_session, delete_books_stmt, is_commit=False)
+    delete_books_stmt = delete_book_from_id_stmt(author_id)
+    delete_statement(db_session, delete_books_stmt, is_commit=True)
