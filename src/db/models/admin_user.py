@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 class AdminUser(SQLModel, table=True):
     """Model for admin users with authentication."""
 
-    __tablename__ = "admin_user"
+    __tablename__ = "admin_users"
     id: int | None = Field(default=None, primary_key=True)
     user_id: str = Field(nullable=False, max_length=255, index=True, unique=True)
     password: str = Field(nullable=False, max_length=255)

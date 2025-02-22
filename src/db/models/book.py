@@ -5,9 +5,11 @@ from sqlmodel import Field, SQLModel
 
 
 class Book(SQLModel, table=True):
+    __tablename__ = "books"
+
     id: int | None = Field(default=None, primary_key=True, index=True, nullable=False)
     title: str = Field(nullable=False, max_length=255)
-    author_id: int = Field(foreign_key="author.id", index=True, nullable=False)
+    author_id: int = Field(foreign_key="authors.id", index=True, nullable=False)
     published_date: date = Field(nullable=False)
     category: str | None = Field(default=None, max_length=100)
     created_at: datetime = Field(

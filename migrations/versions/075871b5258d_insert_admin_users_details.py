@@ -1,0 +1,32 @@
+"""Insert admin_users details
+
+Revision ID: 075871b5258d
+Revises: 1f3bc1d32fa5
+Create Date: 2025-02-22 16:52:31.231755
+
+"""
+
+from typing import Sequence, Union
+
+from alembic import op
+
+# revision identifiers, used by Alembic.
+revision: str = "075871b5258d"
+down_revision: Union[str, None] = "1f3bc1d32fa5"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    op.execute("""
+        INSERT INTO admin_users (user_id, password, created_at)
+        VALUES ('user1@shadow.com',
+               '8e67dd1355714239acde098b6f1cf906bde45be6db826dc2caca7536e07ae844',
+               CURRENT_TIMESTAMP);
+    """)
+
+
+def downgrade() -> None:
+    op.execute("""
+        DELETE FROM admin_users WHERE user_id IN ('user1@shadow.com');
+    """)
