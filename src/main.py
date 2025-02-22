@@ -6,12 +6,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from src.config.config import APP_CONFIG
-from src.db.check import check_db_exist
+from src.db.check import db_settings_initializations
 from src.db.engine import get_db_engine
 from src.exceptions.app import AppException
 from src.helper.logging import init_loggers
 from src.models.http_response_code import HTTPResponseCode
 from src.router.author import router as author_router
+from src.router.book import router as book_router
 from src.router.docs import router as docs_router
 from src.router.health import router as health_router
 
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: PLR0915
     init_loggers(APP_CONFIG)
     logger = logging.getLogger("app")
     try:
-        check_db_exist()
+        db_settings_initializations()
         logger.info("Starting up the application...")
         yield
     except Exception as exc:
@@ -70,3 +71,4 @@ async def exception_handler(_request: Request, exc: Exception) -> JSONResponse:
 app.include_router(docs_router)
 app.include_router(health_router)
 app.include_router(author_router)
+app.include_router(book_router)

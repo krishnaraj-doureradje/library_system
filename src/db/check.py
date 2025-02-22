@@ -9,11 +9,11 @@ from src.db.engine import get_db_session
 logger = logging.getLogger("app")
 
 
-def check_db_exist() -> None:
-    """Check if the database connection is valid and accessible."""
+def db_settings_initializations() -> None:
+    """Databases settings initializations."""
     try:
         with contextmanager(get_db_session)() as session:
-            session.exec(text("SELECT 1"))  # type: ignore
+            session.exec(text("PRAGMA foreign_keys = ON;"))  # type: ignore
             logger.info("Database connection verified successfully.")
     except SQLAlchemyError as e:
         logger.error(f"Failed to verify database connection: {str(e)}")

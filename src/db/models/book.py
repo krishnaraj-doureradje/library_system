@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, UniqueConstraint, func
 from sqlmodel import Field, SQLModel
 
 
@@ -24,6 +24,11 @@ class Book(SQLModel, table=True):
             server_default=func.now(),
             onupdate=func.now(),
             nullable=False,
+        ),
+    )
+    __table_args__ = (
+        UniqueConstraint(
+            "title", "author_id", "published_date", name="uq_title_authorid_publish_date"
         ),
     )
 
