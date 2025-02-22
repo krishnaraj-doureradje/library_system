@@ -113,3 +113,35 @@ def get_authors_with_offset_and_limit(
         next_page=next_page,
         previous_page=previous_page,
     )
+
+
+def update_author_on_db(
+    db_session: db_dependency, author_id: int, author_in: AuthorIn
+) -> AuthorOut:
+    """Update a author based on the author id.
+
+    Args:
+        db_session (db_dependency): Database session.
+        author_id (int): Author id.
+        author_in (AuthorIn): Author details.
+
+    Raises:
+        NotFoundException: Raised when the author id is not found in the database.
+
+    Returns:
+        AuthorOut: Updated author details.
+    """
+    db_author = get_author_from_id(db_session, author_id)
+
+    # Update the author fields with the new values
+    for field, value in author_in.model_dump().items():
+        setattr(db_author, field, value)
+
+    author_out = AuthorOut(**db_author.model_dump())
+    # We don't need to refresh the object for the update operation, so we can avoid
+    # making a select request to the database.
+    execute_all_query(
+        db_session,
+        [db_author],
+    )
+    return author_out

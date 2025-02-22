@@ -5,6 +5,7 @@ from src.db.operation import (
     create_author_on_db,
     get_author_from_id,
     get_authors_with_offset_and_limit,
+    update_author_on_db,
 )
 from src.helper.pagination import pager_params_dependency
 from src.models.author import (
@@ -81,3 +82,44 @@ async def get_all_authors(
         limit=pager_params["limit"],
     )
     return authors
+
+
+@router.put(
+    "/authors/{author_id}",
+    response_model=AuthorOut,
+    responses={
+        "401": {"model": ErrorResponse},
+        "404": {"model": ErrorResponse},
+        "500": {"model": ErrorResponse},
+    },
+    summary="To update an author based on the author id",
+    tags=["Authors"],
+)
+async def update_author(
+    db_session: db_dependency,
+    author_in: AuthorIn,
+    author_id: int = Path(..., title="Author ID", examples=[1]),
+) -> AuthorOut | ErrorResponse:
+    updated_author = update_author_on_db(db_session, author_id, author_in)
+    return updated_author
+
+
+@router.delete(
+    "/authors/{author_id}",
+    responses={
+        "401": {"model": ErrorResponse},
+        "500": {"model": ErrorResponse},
+    },
+    status_code=HTTPResponseCode.NO_CONTENT,
+    summary="To delete a author based on the author id.",
+    tags=["Authors"],
+)
+async def delete_author(
+    db_session: db_dependency,
+    author_id: int = Path(
+        ...,
+        title="Author ID",
+        examples=[1],
+    ),
+) -> None:
+    raise NotImplementedError("Not implemented")
