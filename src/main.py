@@ -15,6 +15,7 @@ from src.router.author import router as author_router
 from src.router.book import router as book_router
 from src.router.docs import router as docs_router
 from src.router.health import router as health_router
+from src.router.stock import router as stock_router
 
 
 @asynccontextmanager
@@ -72,3 +73,4 @@ app.include_router(docs_router)
 app.include_router(health_router)
 app.include_router(author_router)
 app.include_router(book_router)
+app.include_router(stock_router)

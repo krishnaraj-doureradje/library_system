@@ -3,6 +3,7 @@ from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
 from src.db.models.book import Book
+from src.db.models.stock import Stock
 from src.db.query import (
     get_admin_user_stmt,
     get_author_count_stmt,
@@ -17,6 +18,7 @@ from src.helper.pagination import pagination_details
 from src.models.author import AuthorIn, AuthorOut, AuthorsList
 from src.models.book import BookIn, BookOut, BooksList
 from src.models.http_response_code import HTTPResponseCode
+from src.models.stock import StockIn, StockOut
 
 
 def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> AuthorOut:
@@ -294,3 +296,19 @@ def update_book_on_db(db_session: db_dependency, book_id: int, book_in: BookIn) 
         [db_book],  # type: ignore
     )
     return book_out
+
+
+def create_stock_on_db(db_session: db_dependency, stock_in: StockIn) -> StockOut:
+    """Create a new stock in the databases
+
+    Args:
+        db_session (db_dependency): Database session.
+        stock_in (StockIn): Stock details.
+
+    Returns:
+        StockOut: Stock details with ID
+    """
+    new_stock = Stock(**stock_in.model_dump())
+    # Refresh the object after commit to get the primary key
+    execute_all_query(db_session, [new_stock], is_commit=True, is_refresh_after_commit=True)
+    return StockOut(**new_stock.model_dump())

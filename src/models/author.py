@@ -3,7 +3,7 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 
-from src.models.pagiantion import Pagination
+from src.models.pagination import Pagination
 
 
 class AuthorBase(BaseModel):
