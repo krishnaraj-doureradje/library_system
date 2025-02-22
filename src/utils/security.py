@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
+from src.config.config import APP_CONFIG
 from src.constants.security import PASSWORD_MIN_LEN
 from src.db.engine import db_dependency
 from src.db.operation import get_admin_user
@@ -59,6 +60,9 @@ def user_is_authenticated(
     Raises:
         AuthenticationException: Raise exception if it's not a valid username or password
     """
+    if not APP_CONFIG["authentication"]["basic"]["enable"]:
+        return None
+
     username = credentials.username
     password = credentials.password
 

@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
 from src.db.operation import (
     create_author_on_db,
+    get_author_from_id,
+    get_authors_with_offset_and_limit,
 )
+from src.helper.pagination import pager_params_dependency
 from src.models.author import (
     AuthorIn,
     AuthorOut,
+    AuthorsList,
 )
 from src.models.error_response import ErrorResponse
 from src.models.http_response_code import HTTPResponseCode
@@ -32,3 +36,48 @@ async def create_author(
 ) -> AuthorOut | ErrorResponse:
     new_author = create_author_on_db(db_session, author_in)
     return new_author
+
+
+@router.get(
+    "/authors/{author_id}",
+    response_model=AuthorOut,
+    responses={
+        "401": {"model": ErrorResponse},
+        "404": {"model": ErrorResponse},
+        "500": {"model": ErrorResponse},
+    },
+    summary="To get an author based on the author id.",
+    tags=["Authors"],
+)
+async def get_author(
+    db_session: db_dependency,
+    author_id: int = Path(
+        ...,
+        title="Author ID",
+        examples=[1],
+    ),
+) -> AuthorOut | ErrorResponse:
+    author_out = get_author_from_id(db_session, author_id)
+    return author_out
+
+
+@router.get(
+    "/authors",
+    response_model=AuthorsList,
+    responses={
+        "401": {"model": ErrorResponse},
+        "500": {"model": ErrorResponse},
+    },
+    summary="To get all authors from the database with pagination.",
+    tags=["Authors"],
+)
+async def get_all_authors(
+    db_session: db_dependency,
+    pager_params: pager_params_dependency,
+) -> AuthorsList | ErrorResponse:
+    authors = get_authors_with_offset_and_limit(
+        db_session,
+        offset=pager_params["skip"],
+        limit=pager_params["limit"],
+    )
+    return authors

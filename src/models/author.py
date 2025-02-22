@@ -3,6 +3,8 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 
+from src.models.pagiantion import Pagination
+
 
 class AuthorBase(BaseModel):
     """Pydantic base model to represent the author."""
@@ -44,3 +46,10 @@ class AuthorOut(AuthorBase):
         ...,
         description="Created author ID",
     )
+
+
+class AuthorsList(Pagination):
+    """Pydantic model to represent a list of authors."""
+
+    number_of_authors: int = Field(..., description="Total number of authors")
+    authors: list[AuthorOut] = Field(..., description="List of authors")

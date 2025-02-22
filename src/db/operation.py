@@ -1,9 +1,17 @@
 from src.db.engine import db_dependency
-from src.db.execution import execute_all_query, fetch_one_or_none
+from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
-from src.db.query import get_admin_user_stmt
-from src.models.author import AuthorIn, AuthorOut
+from src.db.query import (
+    get_admin_user_stmt,
+    get_author_count_stmt,
+    get_author_stmt,
+    get_authors_stmt_with_limit_and_offset,
+)
+from src.exceptions.app import NotFoundException
+from src.helper.pagination import pagination_details
+from src.models.author import AuthorIn, AuthorOut, AuthorsList
+from src.models.http_response_code import HTTPResponseCode
 
 
 def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> AuthorOut:
@@ -23,6 +31,85 @@ def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> Autho
 
 
 def get_admin_user(db_session: db_dependency, user_id: str) -> AdminUser | None:
+    """Retrieve an admin user from the database.
+
+    Args:
+        db_session (db_dependency): Databases sessions.
+        user_id (str): Admin user_id
+
+    Returns:
+        AdminUser | None: The corresponding AdminUser object if found, otherwise None.
+    """
     admin_user_stmt = get_admin_user_stmt(user_id)
     admin_user = fetch_one_or_none(db_session, admin_user_stmt)
     return admin_user
+
+
+def get_author_from_id(db_session: db_dependency, author_id: int) -> AuthorOut:
+    """Get an author based on the author id.
+
+    Args:
+        db_session (db_dependency):  Database session.
+        author_id (int): Author id
+
+    Raises:
+        NotFoundException: Raised when the author id is not found in the database.
+
+    Returns:
+        AuthorOut: Author details
+    """
+    author_stmt = get_author_stmt(author_id)
+    author = fetch_one_or_none(db_session, author_stmt)
+
+    if author is None:
+        raise NotFoundException(
+            status_code=HTTPResponseCode.NOT_FOUND,
+            message=f"{author_id=} not found in the database",
+        )
+
+    return author
+
+
+def get_authors_with_offset_and_limit(
+    db_session: db_dependency, *, offset: int, limit: int
+) -> AuthorsList:
+    """Get all authors with pagination.
+
+    Args:
+        db_session (db_dependency): Database session.
+        offset (int): Offset value.
+        limit (int): Limit value.
+
+    Returns:
+        AuthorsList: List of authors.
+    """
+    authors_count_stmt = get_author_count_stmt()
+    authors_count = fetch_one_or_none(db_session, authors_count_stmt)  # type: ignore
+
+    # There is nothing to fetch if the authors_count is None
+    if authors_count is None:
+        return AuthorsList(
+            authors=[],
+            number_of_authors=0,
+            number_of_pages=0,
+            current_page=0,
+            next_page=None,
+            previous_page=None,
+        )
+
+    authors_stmt = get_authors_stmt_with_limit_and_offset(offset=offset, limit=limit)
+    authors = [AuthorOut(**author.model_dump()) for author in fetch_all(db_session, authors_stmt)]
+
+    # Calculate the number of pages, current page, next page, and previous page
+    number_of_pages, current_page, next_page, previous_page = pagination_details(
+        offset=offset, limit=limit, counts=authors_count
+    )
+
+    return AuthorsList(
+        authors=authors,
+        number_of_authors=authors_count,
+        number_of_pages=number_of_pages,
+        current_page=current_page,
+        next_page=next_page,
+        previous_page=previous_page,
+    )
