@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from sqlmodel import Field
 
+from src.models.pagination import Pagination
+
 
 class StockBase(BaseModel):
     """Pydantic model to represent the stock base."""
@@ -29,3 +31,10 @@ class StockOut(StockBase):
         title="Book title",
     )
     category: str | None = Field(default=None, max_length=100)
+
+
+class StocksList(Pagination):
+    """Pydantic model to represent a list of stocks."""
+
+    number_of_stocks: int = Field(..., description="Total number of stocks")
+    stocks: list[StockOut] = Field(..., description="List of available stocks")

@@ -13,13 +13,15 @@ from src.db.query import (
     get_book_stmt,
     get_books_stmt_with_limit_and_offset,
     get_stock_book_stmt,
+    get_stocks_count_stmt,
+    get_stocks_stmt_with_limit_and_offset,
 )
 from src.exceptions.app import NotFoundException
 from src.helper.pagination import pagination_details
 from src.models.author import AuthorIn, AuthorOut, AuthorsList
 from src.models.book import BookIn, BookOut, BooksList
 from src.models.http_response_code import HTTPResponseCode
-from src.models.stock import StockIn, StockOut
+from src.models.stock import StockIn, StockOut, StocksList
 
 
 def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> AuthorOut:
@@ -355,3 +357,53 @@ def get_stock_book_out_from_db(db_session: db_dependency, book_id: int) -> Stock
     book_data = db_stock.book.model_dump()
     combined_data = stock_data | book_data
     return StockOut(**combined_data)
+
+
+def get_stocks_with_offset_and_limit(
+    db_session: db_dependency, *, offset: int, limit: int
+) -> StocksList:
+    """Get all stocks with pagination.
+
+    Args:
+        db_session (db_dependency): Database session.
+        offset (int): Offset value.
+        limit (int): Limit value.
+
+    Returns:
+        StocksList: List of available stocks.
+    """
+    stocks_count_stmt = get_stocks_count_stmt()
+    stocks_count = fetch_one_or_none(db_session, stocks_count_stmt)  # type: ignore
+
+    # There is nothing to fetch if the authors_count is None
+    if stocks_count is None:
+        return StocksList(
+            stocks=[],
+            number_of_stocks=0,
+            number_of_pages=0,
+            current_page=0,
+            next_page=None,
+            previous_page=None,
+        )
+
+    stocks_stmt = get_stocks_stmt_with_limit_and_offset(offset=offset, limit=limit)
+    stocks = []
+    for db_stock in fetch_all(db_session, stocks_stmt):
+        stock_data = db_stock.model_dump()
+        book_data = db_stock.book.model_dump()
+        combined_data = stock_data | book_data
+        stocks.append(StockOut(**combined_data))
+
+    # Calculate the number of pages, current page, next page, and previous page
+    number_of_pages, current_page, next_page, previous_page = pagination_details(
+        offset=offset, limit=limit, counts=stocks_count
+    )
+
+    return StocksList(
+        stocks=stocks,
+        number_of_stocks=stocks_count,
+        number_of_pages=number_of_pages,
+        current_page=current_page,
+        next_page=next_page,
+        previous_page=previous_page,
+    )

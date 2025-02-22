@@ -1,10 +1,15 @@
 from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
-from src.db.operation import create_stock_on_db, get_stock_book_out_from_db
+from src.db.operation import (
+    create_stock_on_db,
+    get_stock_book_out_from_db,
+    get_stocks_with_offset_and_limit,
+)
+from src.helper.pagination import pager_params_dependency
 from src.models.error_response import ErrorResponse
 from src.models.http_response_code import HTTPResponseCode
-from src.models.stock import StockIn, StockOut
+from src.models.stock import StockIn, StockOut, StocksList
 from src.utils.security import user_is_authenticated
 
 router = APIRouter(dependencies=[Depends(user_is_authenticated)])
@@ -50,3 +55,27 @@ async def get_stock(
 ) -> StockOut | ErrorResponse:
     stock_out = get_stock_book_out_from_db(db_session, book_id)
     return stock_out
+
+
+@router.get(
+    "/stocks",
+    response_model=StocksList,
+    responses={
+        "401": {"model": ErrorResponse},
+        "500": {"model": ErrorResponse},
+    },
+    summary="To get all stocks from the database with pagination.",
+    tags=["Stocks"],
+)
+async def get_all_stocks(
+    db_session: db_dependency,
+    pager_params: pager_params_dependency,
+) -> StocksList | ErrorResponse:
+    stocks = get_stocks_with_offset_and_limit(
+        db_session,
+        offset=pager_params["skip"],
+        limit=pager_params["limit"],
+    )
+    return stocks
+
+
