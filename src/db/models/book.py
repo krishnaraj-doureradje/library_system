@@ -29,7 +29,7 @@ class Book(SQLModel, table=True):
         ),
     )
     author: "Author" = Relationship(back_populates="books")  # type: ignore  # noqa: F821
-    stock: "Stock" = Relationship(back_populates="book")  # type: ignore  # noqa: F821
+    stock: list["Stock"] = Relationship(back_populates="book")  # type: ignore  # noqa: F821
 
     __table_args__ = (
         UniqueConstraint(

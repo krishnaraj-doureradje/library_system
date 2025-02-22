@@ -471,3 +471,30 @@ def delete_author_on_db(
     delete_author_stmt = delete_author_from_id(author_id)
     delete_statement(db_session, delete_books_stmt, is_commit=False)
     delete_statement(db_session, delete_author_stmt, is_commit=True)
+
+
+def delete_book_on_db(
+    db_session: db_dependency,
+    author_id: int,
+) -> None:
+    """Delete a book based on the author id.
+
+    Args:
+        db_session (db_dependency): Database session.
+        author_id (int): Author id.
+    """
+    try:
+        db_books = get_book_from_id(db_session, author_id)
+    except NotFoundException:
+        # Nothing to delete so don't raise exception
+        return None
+
+    is_stock_present = any(book.stock for book in db_books.stock)
+    if is_stock_present:
+        raise SqlException(
+            status_code=HTTPResponseCode.FORBIDDEN,
+            message="Author's book present in the stocks",
+        )
+
+    delete_books_stmt = delete_book_from_id(author_id)
+    delete_statement(db_session, delete_books_stmt, is_commit=False)

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Path
 from src.db.engine import db_dependency
 from src.db.operation import (
     create_book_on_db,
+    delete_book_on_db,
     get_book_out_from_db,
     get_books_with_offset_and_limit,
     update_book_on_db,
@@ -118,4 +119,4 @@ async def delete_book(
         examples=[1],
     ),
 ) -> None:
-    raise NotImplementedError("Not implemented")
+    delete_book_on_db(db_session, book_id)
