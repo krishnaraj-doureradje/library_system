@@ -21,7 +21,7 @@ from src.helper.pagination import pagination_details
 from src.models.author import AuthorIn, AuthorOut, AuthorsList
 from src.models.book import BookIn, BookOut, BooksList
 from src.models.http_response_code import HTTPResponseCode
-from src.models.stock import StockIn, StockOut, StocksList
+from src.models.stock import StockIn, StockOut, StockQuantityAdd, StocksList
 
 
 def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> AuthorOut:
@@ -407,3 +407,36 @@ def get_stocks_with_offset_and_limit(
         next_page=next_page,
         previous_page=previous_page,
     )
+
+
+def add_new_quantity_to_the_existing_stocks_on_db(
+    db_session: db_dependency, book_id: int, stock_in: StockQuantityAdd
+) -> StockOut:
+    """Add new quantity to the existing stocks.
+
+    Args:
+        db_session (db_dependency): Database session.
+        book_id (int): book id.
+        stock_in (StockQuantityAdd): Stock update details.
+
+    Raises:
+        NotFoundException: Raised when the stock id is not found in the database.
+
+    Returns:
+        StockOut: Updated stock details.
+    """
+    db_stock = get_stock_book_from_id(db_session, book_id)
+    # Add new quantity to the stocks
+    db_stock.stock_quantity += stock_in.stock_quantity
+
+    stock_data = db_stock.model_dump()
+    book_data = db_stock.book.model_dump()
+    combined_data = stock_data | book_data
+    stock_out = StockOut(**combined_data)
+    # We don't need to refresh the object for the update operation, so we can avoid
+    # making a select request to the database.
+    execute_all_query(
+        db_session,
+        [db_stock],  # type: ignore
+    )
+    return stock_out

@@ -17,6 +17,12 @@ class StockIn(StockBase):
     pass
 
 
+class StockQuantityAdd(BaseModel):
+    """Pydantic model to represent the stock update for input."""
+
+    stock_quantity: int = Field(..., gt=0, title="Number of stock to be added")
+
+
 class StockOut(StockBase):
     """Pydantic model to represent the stock for output."""
 
