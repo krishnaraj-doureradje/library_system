@@ -28,6 +28,7 @@ class Book(SQLModel, table=True):
             nullable=False,
         ),
     )
+    author: "Author" = Relationship(back_populates="books")  # type: ignore  # noqa: F821
     stock: "Stock" = Relationship(back_populates="book")  # type: ignore  # noqa: F821
 
     __table_args__ = (

@@ -1,10 +1,12 @@
 from src.db.engine import db_dependency
-from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
+from src.db.execution import delete_statement, execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
 from src.db.models.book import Book
 from src.db.models.stock import Stock
 from src.db.query import (
+    delete_author_from_id,
+    delete_book_from_id,
     get_admin_user_stmt,
     get_author_count_stmt,
     get_author_stmt,
@@ -16,7 +18,7 @@ from src.db.query import (
     get_stocks_count_stmt,
     get_stocks_stmt_with_limit_and_offset,
 )
-from src.exceptions.app import NotFoundException
+from src.exceptions.app import NotFoundException, SqlException
 from src.helper.pagination import pagination_details
 from src.models.author import AuthorIn, AuthorOut, AuthorsList
 from src.models.book import BookIn, BookOut, BooksList
@@ -440,3 +442,32 @@ def add_new_quantity_to_the_existing_stocks_on_db(
         [db_stock],  # type: ignore
     )
     return stock_out
+
+
+def delete_author_on_db(
+    db_session: db_dependency,
+    author_id: int,
+) -> None:
+    """Delete a author based on the author id.
+
+    Args:
+        db_session (db_dependency): Database session.
+        author_id (int): Author id.
+    """
+    try:
+        db_author = get_author_from_id(db_session, author_id)
+    except NotFoundException:
+        # Nothing to delete so don't raise exception
+        return None
+
+    is_stock_present = any(book.stock for book in db_author.books)
+    if is_stock_present:
+        raise SqlException(
+            status_code=HTTPResponseCode.FORBIDDEN,
+            message="Author's book present in the stocks",
+        )
+
+    delete_books_stmt = delete_book_from_id(author_id)
+    delete_author_stmt = delete_author_from_id(author_id)
+    delete_statement(db_session, delete_books_stmt, is_commit=False)
+    delete_statement(db_session, delete_author_stmt, is_commit=True)

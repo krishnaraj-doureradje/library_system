@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Path
 from src.db.engine import db_dependency
 from src.db.operation import (
     create_author_on_db,
+    delete_author_on_db,
     get_author_out_from_db,
     get_authors_with_offset_and_limit,
     update_author_on_db,
@@ -108,10 +109,14 @@ async def update_author(
     "/authors/{author_id}",
     responses={
         "401": {"model": ErrorResponse},
+        "403": {"model": ErrorResponse},
         "500": {"model": ErrorResponse},
     },
     status_code=HTTPResponseCode.NO_CONTENT,
-    summary="To delete a author based on the author id.",
+    summary=(
+        "To delete an author and a book based on the author ID,"
+        "if the author's books are not available in stock."
+    ),
     tags=["Authors"],
 )
 async def delete_author(
@@ -122,4 +127,4 @@ async def delete_author(
         examples=[1],
     ),
 ) -> None:
-    raise NotImplementedError("Not implemented")
+    delete_author_on_db(db_session, author_id)

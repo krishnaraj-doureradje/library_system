@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import Delete, delete, func
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
@@ -129,4 +129,30 @@ def get_stocks_stmt_with_limit_and_offset(*, offset: int, limit: int) -> SelectO
         SelectOfScalar[Stock]: Select statement for all stocks.
     """
     stmt = select(Stock).limit(limit).offset(offset).order_by(Stock.id.asc())  # type: ignore
+    return stmt
+
+
+def delete_author_from_id(author_id: int) -> Delete:
+    """This function return delete author statement
+
+    Args:
+        author_id (int): Author id to be deleted
+
+    Returns:
+         Delete: Delete statement
+    """
+    stmt = delete(Author).where(Author.id == author_id)  # type: ignore
+    return stmt
+
+
+def delete_book_from_id(author_id: int) -> Delete:
+    """This function return delete book statement
+
+    Args:
+        author_id (int): Author id to be deleted
+
+    Returns:
+         Delete: Delete statement
+    """
+    stmt = delete(Book).where(Book.author_id == author_id)  # type: ignore
     return stmt

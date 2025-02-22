@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from sqlalchemy import Column, DateTime, UniqueConstraint, func
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Author(SQLModel, table=True):
@@ -30,6 +30,9 @@ class Author(SQLModel, table=True):
             nullable=False,
         ),
     )
+
+    books: list["Book"] = Relationship(back_populates="author")  # type: ignore  # noqa: F821
+
     __table_args__ = (
         UniqueConstraint("first_name", "last_name", "birth_date", name="uq_author_name_birthdate"),
     )
