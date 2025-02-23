@@ -4,6 +4,7 @@ from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
 from src.db.models.book import Book
 from src.db.models.stock import Stock
+from src.db.models.user import User
 from src.db.query import (
     delete_author_from_id_stmt,
     delete_book_from_id_stmt,
@@ -24,6 +25,7 @@ from src.models.author import AuthorIn, AuthorOut, AuthorsList
 from src.models.book import BookIn, BookOut, BooksList
 from src.models.http_response_code import HTTPResponseCode
 from src.models.stock import StockIn, StockOut, StockQuantityAdd, StocksList
+from src.models.user import UserIn, UserOut
 
 
 def create_author_on_db(db_session: db_dependency, author_in: AuthorIn) -> AuthorOut:
@@ -502,7 +504,7 @@ def delete_book_on_db(
     db_session: db_dependency,
     book_id: int,
 ) -> None:
-    """Delete a book based on the author id.
+    """Delete a book based on the book id.
 
     Args:
         db_session (db_dependency): Database session.
@@ -523,3 +525,19 @@ def delete_book_on_db(
 
     delete_books_stmt = delete_book_from_id_stmt(book_id)
     delete_statement(db_session, delete_books_stmt, is_commit=True)
+
+
+def create_user_on_db(db_session: db_dependency, user_in: UserIn) -> UserOut:
+    """Create a new user in the databases
+
+    Args:
+        db_session (db_dependency): Database session.
+        user_in (UserIn): User details
+
+    Returns:
+        UserOut: User details with ID
+    """
+    new_user = User(**user_in.model_dump())
+    # Refresh the object after commit to get the primary key
+    execute_all_query(db_session, [new_user], is_commit=True, is_refresh_after_commit=True)
+    return UserOut(**new_user.model_dump())
