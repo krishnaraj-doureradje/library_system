@@ -68,3 +68,9 @@ class AuthenticationException(AppException):
     """AuthenticationException base class"""
 
     pass
+
+
+class ReservationException(AppException):
+    """ReservationException base class"""
+
+    pass

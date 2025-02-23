@@ -15,6 +15,7 @@ from src.router.author import router as author_router
 from src.router.book import router as book_router
 from src.router.docs import router as docs_router
 from src.router.health import router as health_router
+from src.router.reservation import router as reservation_router
 from src.router.stock import router as stock_router
 from src.router.user import router as user_router
 
@@ -40,7 +41,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: PLR0915
 
 
 description = """
-The system for managing its book stock. In order to properly manage this library,
+The system for managing its book stock. In order to properly manage the library,
 system users must be able to :
 
 - Add, modify and delete authors
@@ -76,3 +77,4 @@ app.include_router(author_router)
 app.include_router(book_router)
 app.include_router(stock_router)
 app.include_router(user_router)
+app.include_router(reservation_router)

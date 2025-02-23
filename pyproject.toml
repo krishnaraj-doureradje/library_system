@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "library-system"
 version = "0.1.0"
-description = """The system for managing its book stock. In order to properly manage this library, system users must be able to : \
+description = """The system for managing its book stock. In order to properly manage the library, system users must be able to : \
 - Add, modify and delete authors \
 - Add, modify and delete books \
 - Manage book loans and stock \

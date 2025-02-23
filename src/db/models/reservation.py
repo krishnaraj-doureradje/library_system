@@ -1,10 +1,7 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import Column, DateTime, func
-from sqlmodel import Field, Relationship, SQLModel
-
-from src.db.models.reservation_status import ReservationStatus
+from sqlmodel import Field, SQLModel
 
 
 class Reservation(SQLModel, table=True):
@@ -23,5 +20,3 @@ class Reservation(SQLModel, table=True):
     )
     due_date: datetime = Field(nullable=False)
     returned_at: datetime | None = None
-
-    status: Optional[ReservationStatus] = Relationship(back_populates="reservations")

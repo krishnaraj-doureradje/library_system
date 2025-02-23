@@ -1,10 +1,12 @@
-from sqlalchemy import Delete, delete, func
+from sqlalchemy import Delete, and_, delete, func
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
 from src.db.models.admin_user import AdminUser
 from src.db.models.author import Author
 from src.db.models.book import Book
+from src.db.models.reservation import Reservation
+from src.db.models.reservation_status import ReservationStatus
 from src.db.models.stock import Stock
 from src.db.models.user import User
 
@@ -193,4 +195,76 @@ def get_users_stmt_with_limit_and_offset(*, offset: int, limit: int) -> SelectOf
         SelectOfScalar[User]: Select statement for all users.
     """
     stmt = select(User).limit(limit).offset(offset).order_by(User.id.asc())  # type: ignore
+    return stmt
+
+
+def get_reservation_status_stmt() -> SelectOfScalar[ReservationStatus]:
+    """This function returns a select statement to get the reservation status.
+
+    Returns:
+        SelectOfScalar[ReservationStatus]: Select statement for reservation status.
+    """
+    stmt = select(ReservationStatus)
+    return stmt
+
+
+def get_non_returned_books_from_user_id_stmt(
+    *, user_id: int, book_id: int
+) -> SelectOfScalar[Reservation]:
+    """This function returns a select statement to get non returned books.
+
+    Args:
+        user_id (int): User ID
+        book_id (int): Book ID
+
+    Returns:
+        SelectOfScalar[ReservationStatus]: Select statement for non returned books.
+    """
+
+    stmt = select(Reservation).where(
+        and_(
+            Reservation.user_id == user_id,  # type: ignore
+            Reservation.book_id == book_id,  # type: ignore
+            Reservation.returned_at.is_(None),  # type: ignore
+        )
+    )
+    return stmt
+
+
+def get_reservations_count_stmt() -> SelectOfScalar[int]:
+    """This function returns a select statement to get the total number of reservations.
+
+    Returns:
+        SelectOfScalar[int]: Select statement for the reservations count.
+    """
+    stmt = select(func.count().label("reservation_count")).select_from(Reservation)
+    return stmt
+
+
+def get_reservations_stmt_with_limit_and_offset(
+    *, offset: int, limit: int
+) -> SelectOfScalar[Reservation]:
+    """This function returns a select statement to get all reservations with pagination.
+
+    Args:
+        offset (int): Offset value.
+        limit (int): Limit value.
+
+    Returns:
+        SelectOfScalar[Reservation]: Select statement for all Reservation.
+    """
+    stmt = select(Reservation).limit(limit).offset(offset).order_by(Reservation.id.asc())  # type: ignore
+    return stmt
+
+
+def get_reservation_from_id_stmt(reservation_id: int) -> SelectOfScalar[Reservation]:
+    """This function returns a select statement to get the reservation.
+
+    Args:
+        reservation_id (int): The reservation id
+
+    Returns:
+        SelectOfScalar[Reservation]: Select statement for reservation.
+    """
+    stmt = select(Reservation).where(Reservation.id == reservation_id)
     return stmt
