@@ -126,7 +126,7 @@ def get_stock_details(db_session: db_dependency, book_id: int) -> Stock:
     if not (stock.stock_quantity > 0):
         raise ReservationException(
             status_code=HTTPResponseCode.BAD_REQUEST,
-            message=f"{book_id=} not available for the reservations",
+            message=f"{book_id=} not available for reservations",
         )
 
     return stock
