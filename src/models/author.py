@@ -1,7 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict
-from sqlmodel import Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.models.pagination import Pagination
 

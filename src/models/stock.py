@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from sqlmodel import Field
+from pydantic import BaseModel, Field
 
 from src.models.pagination import Pagination
 
@@ -36,7 +35,7 @@ class StockOut(StockBase):
         max_length=100,
         title="Book title",
     )
-    category: str | None = Field(default=None, max_length=100)
+    category: str | None = Field(default=None, min_length=1, max_length=100, title="Book's Title")
 
 
 class StocksList(Pagination):

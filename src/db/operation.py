@@ -12,7 +12,7 @@ from src.db.query import (
     get_author_stmt,
     get_authors_stmt_with_limit_and_offset,
     get_book_count_stmt,
-    get_book_stmt,
+    get_book_from_id_stmt,
     get_books_stmt_with_limit_and_offset,
     get_stock_book_stmt,
     get_stocks_count_stmt,
@@ -202,7 +202,7 @@ def get_book_from_id(db_session: db_dependency, book_id: int) -> Book:
     Returns:
         Book: Book details
     """
-    book_stmt = get_book_stmt(book_id)
+    book_stmt = get_book_from_id_stmt(book_id)
     book = fetch_one_or_none(db_session, book_stmt)
 
     if book is None:
@@ -500,16 +500,16 @@ def delete_author_on_db(
 
 def delete_book_on_db(
     db_session: db_dependency,
-    author_id: int,
+    book_id: int,
 ) -> None:
     """Delete a book based on the author id.
 
     Args:
         db_session (db_dependency): Database session.
-        author_id (int): Author id.
+        book_id (int): Book id.
     """
     try:
-        db_books = get_book_from_id(db_session, author_id)
+        db_books = get_book_from_id(db_session, book_id)
     except NotFoundException:
         # Nothing to delete so don't raise exception
         return None
@@ -518,8 +518,8 @@ def delete_book_on_db(
     if is_stock_present:
         raise SqlException(
             status_code=HTTPResponseCode.FORBIDDEN,
-            message="Author's book present in the stocks",
+            message="Book present in the stocks",
         )
 
-    delete_books_stmt = delete_book_from_id_stmt(author_id)
+    delete_books_stmt = delete_book_from_id_stmt(book_id)
     delete_statement(db_session, delete_books_stmt, is_commit=True)

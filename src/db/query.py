@@ -58,7 +58,7 @@ def get_authors_stmt_with_limit_and_offset(*, offset: int, limit: int) -> Select
     return stmt
 
 
-def get_book_stmt(book_id: int) -> SelectOfScalar[Book]:
+def get_book_from_id_stmt(book_id: int) -> SelectOfScalar[Book]:
     """This function returns a select statement to get the Book.
 
     Args:
@@ -145,14 +145,14 @@ def delete_author_from_id_stmt(author_id: int) -> Delete:
     return stmt
 
 
-def delete_book_from_id_stmt(author_id: int) -> Delete:
+def delete_book_from_id_stmt(book_id: int) -> Delete:
     """This function return delete book statement
 
     Args:
-        author_id (int): Author id to be deleted
+        book_id (int): Book id to be deleted
 
     Returns:
          Delete: Delete statement
     """
-    stmt = delete(Book).where(Book.author_id == author_id)  # type: ignore
+    stmt = delete(Book).where(Book.id == book_id)  # type: ignore
     return stmt
