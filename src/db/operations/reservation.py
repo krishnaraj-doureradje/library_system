@@ -33,7 +33,7 @@ def create_reservation_on_db(
     Returns:
         ReservationOut: Reservation details with ID
     """
-    verify_book_reservation(db_session, reservation_in)
+    verify_user_and_reservation(db_session, reservation_in)
     stock = get_stock_details(db_session, reservation_in.book_id)
     # Reduce stock after the reservations
     stock.stock_quantity -= 1
@@ -66,8 +66,8 @@ def create_reservation_on_db(
     )
 
 
-def verify_book_reservation(db_session: db_dependency, reservation_in: ReservationIn) -> None:
-    """Method is used to verify the reservation logic
+def verify_user_and_reservation(db_session: db_dependency, reservation_in: ReservationIn) -> None:
+    """Method is used to verify user and reservation logic.
 
     Args:
         db_session (db_dependency): Database session.
@@ -101,11 +101,11 @@ def verify_book_reservation(db_session: db_dependency, reservation_in: Reservati
 
 
 def get_stock_details(db_session: db_dependency, book_id: int) -> Stock:
-    """To get stock details from book_id
+    """To get stock details from book_id, it's available for assignment.
 
     Args:
         db_session (db_dependency): Database session.
-        book_id (_type_): _description_
+        book_id (int): Book ID
 
     Returns:
         Stock: Stock details
@@ -123,7 +123,7 @@ def get_stock_details(db_session: db_dependency, book_id: int) -> Stock:
             message=f"{book_id=} not found in the database",
         )
 
-    if not (stock.stock_quantity > 1):
+    if not (stock.stock_quantity > 0):
         raise ReservationException(
             status_code=HTTPResponseCode.BAD_REQUEST,
             message=f"{book_id=} not available for the reservations",
@@ -257,9 +257,16 @@ def update_reservation_on_db(
     Returns:
         ReservationOut: Reservation details.
     """
-    verify_return_book_reservation(db_session, reservation_in, reservation_id)
+    verify_reservation(db_session, reservation_in, reservation_id)
 
-    stock = get_stock_details(db_session, reservation_in.book_id)
+    stock_stmt = get_stock_book_stmt(reservation_in.book_id)
+    stock = fetch_one_or_none(db_session, stock_stmt)
+
+    if stock is None:
+        raise NotFoundException(
+            status_code=HTTPResponseCode.NOT_FOUND,
+            message=f"{reservation_in.book_id=} not found in the database",
+        )
     # Increase stock after return
     stock.stock_quantity += 1
 
@@ -286,10 +293,10 @@ def update_reservation_on_db(
     )
 
 
-def verify_return_book_reservation(
+def verify_reservation(
     db_session: db_dependency, reservation_in: ReservationIn, reservation_id: int
 ) -> None:
-    """Verify return condition
+    """Verify book return condition
 
     Args:
         db_session (db_dependency): Database session.
@@ -310,7 +317,9 @@ def verify_return_book_reservation(
     if non_returned_books is None:
         raise ReservationException(
             status_code=HTTPResponseCode.BAD_REQUEST,
-            message=f"Book not borrowed or user not found {book_id=},{user_id=}",
+            message=(
+                f"Book not borrowed or user not found {book_id=}, {user_id=}, {reservation_id=}"
+            ),
         )
 
 
