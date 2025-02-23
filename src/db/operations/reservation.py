@@ -6,6 +6,7 @@ from src.db.models.reservation import Reservation
 from src.db.models.stock import Stock
 from src.db.query import (
     get_non_returned_books_from_user_id_stmt,
+    get_reservation_books_from_id_stmt,
     get_reservation_from_id_stmt,
     get_reservation_status_stmt,
     get_reservations_count_stmt,
@@ -256,7 +257,7 @@ def update_reservation_on_db(
     Returns:
         ReservationOut: Reservation details.
     """
-    verify_return_book_reservation(db_session, reservation_in)
+    verify_return_book_reservation(db_session, reservation_in, reservation_id)
 
     stock = get_stock_details(db_session, reservation_in.book_id)
     # Increase stock after return
@@ -286,14 +287,14 @@ def update_reservation_on_db(
 
 
 def verify_return_book_reservation(
-    db_session: db_dependency, reservation_in: ReservationIn
+    db_session: db_dependency, reservation_in: ReservationIn, reservation_id: int
 ) -> None:
     """Verify return condition
 
     Args:
         db_session (db_dependency): Database session.
         reservation_in (reservation_in): ReservationIn.
-
+        reservation_id (int): Reservation ID.
 
     Raises:
         ReservationException: If the reservation is not found in the database
@@ -301,8 +302,8 @@ def verify_return_book_reservation(
     user_id = reservation_in.user_id
     book_id = reservation_in.book_id
 
-    non_returned_books_stmt = get_non_returned_books_from_user_id_stmt(
-        user_id=user_id, book_id=book_id
+    non_returned_books_stmt = get_reservation_books_from_id_stmt(
+        reservation_id=reservation_id, user_id=user_id, book_id=book_id
     )
     non_returned_books = fetch_one_or_none(db_session, non_returned_books_stmt)
 
