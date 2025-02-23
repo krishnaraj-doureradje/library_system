@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
-from src.db.operation import (
+from src.db.operations.stock import (
     add_new_quantity_to_the_existing_stocks_on_db,
     create_stock_on_db,
     get_stock_book_out_from_db,

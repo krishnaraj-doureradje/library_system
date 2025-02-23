@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
-from src.db.operation import (
+from src.db.operations.user import (
     create_user_on_db,
     get_user_out_from_db,
     get_users_with_offset_and_limit,

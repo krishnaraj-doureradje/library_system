@@ -16,6 +16,7 @@ class BookBase(BaseModel):
     )
     author_id: int = Field(..., gt=0, title="Author ID")
     published_date: date = Field(..., title="Book published date")
+    category: str | None = Field(default=None, max_length=100)
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -24,6 +25,7 @@ class BookBase(BaseModel):
                     "title": "Pride and Prejudice",
                     "author_id": 1,
                     "published_date": "1980-05-15",
+                    "category": "Science fiction",
                 }
             ]
         }

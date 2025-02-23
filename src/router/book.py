@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
-from src.db.operation import (
+from src.db.operations.book import (
     create_book_on_db,
     delete_book_on_db,
     get_book_out_from_db,

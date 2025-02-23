@@ -8,7 +8,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from src.config.config import APP_CONFIG
 from src.constants.security import PASSWORD_MIN_LEN
 from src.db.engine import db_dependency
-from src.db.operation import get_admin_user
+from src.db.operations.admin_user import get_admin_user
 from src.exceptions.app import AuthenticationException
 from src.models.http_response_code import HTTPResponseCode
 

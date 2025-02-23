@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path
 
 from src.db.engine import db_dependency
-from src.db.operation import (
+from src.db.operations.author import (
     create_author_on_db,
     delete_author_on_db,
     get_author_out_from_db,
