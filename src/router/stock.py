@@ -100,24 +100,3 @@ async def update_stocks(
         db_session, book_id, stock_quantity
     )
     return updated_stock
-
-
-@router.delete(
-    "/stocks/{book_id}",
-    responses={
-        "401": {"model": ErrorResponse},
-        "500": {"model": ErrorResponse},
-    },
-    status_code=HTTPResponseCode.NO_CONTENT,
-    summary="To delete a stock based on the stock id.",
-    tags=["Stocks"],
-)
-async def delete_stock(
-    db_session: db_dependency,
-    book_id: int = Path(
-        ...,
-        title="Book ID",
-        examples=[1],
-    ),
-) -> None:
-    raise NotImplementedError("Not implemented")
