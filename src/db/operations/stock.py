@@ -37,7 +37,7 @@ def create_stock_on_db(db_session: db_dependency, stock_in: StockIn) -> StockOut
 
 
 def get_stock_book_from_id(db_session: db_dependency, book_id: int) -> Stock:
-    """Get an stock based on the book id.
+    """Get a stock based on the book id.
 
     Args:
         db_session (db_dependency):  Database session.
@@ -86,7 +86,7 @@ def get_stock_book_out_from_db(db_session: db_dependency, book_id: int) -> Stock
 def get_stocks_with_offset_and_limit(
     db_session: db_dependency, *, offset: int, limit: int
 ) -> StocksList:
-    """Get all stocks with pagination.
+    """Get all the stocks with pagination.
 
     Args:
         db_session (db_dependency): Database session.
@@ -99,7 +99,7 @@ def get_stocks_with_offset_and_limit(
     stocks_count_stmt = get_stocks_count_stmt()
     stocks_count = fetch_one_or_none(db_session, stocks_count_stmt)  # type: ignore
 
-    # There is nothing to fetch if the authors_count is None
+    # There is nothing to fetch if the stocks_count is None
     if stocks_count is None:
         return StocksList(
             stocks=[],
@@ -111,7 +111,8 @@ def get_stocks_with_offset_and_limit(
         )
 
     stocks_stmt = get_stocks_stmt_with_limit_and_offset(offset=offset, limit=limit)
-    stocks = []
+    stocks: list[StockOut] = []
+
     for db_stock in fetch_all(db_session, stocks_stmt):
         stock_data = db_stock.model_dump()
         book_data = db_stock.book.model_dump()
@@ -162,6 +163,7 @@ def add_new_quantity_to_the_existing_stocks_on_db(
 
     stock_data = db_stock.model_dump()
     book_data = db_stock.book.model_dump()
+
     stock_out = StockOut(
         book_id=stock_data["book_id"],
         stock_quantity=stock_data["stock_quantity"],

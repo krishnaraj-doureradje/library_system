@@ -26,3 +26,8 @@ class Stock(SQLModel, table=True):
         ),
     )
     book: "Book" = Relationship(back_populates="stock")  # type: ignore  # noqa: F821
+
+    def __repr__(self) -> str:
+        return (
+            f"<Stock(id={self.id}, book_id={self.book_id}, stock_quantity={self.stock_quantity})>"
+        )

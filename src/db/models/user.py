@@ -28,3 +28,6 @@ class User(SQLModel, table=True):
             nullable=False,
         ),
     )
+
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, first_name={self.first_name}, last_name={self.last_name})>"

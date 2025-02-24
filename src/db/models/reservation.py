@@ -20,3 +20,6 @@ class Reservation(SQLModel, table=True):
     )
     due_date: datetime = Field(nullable=False)
     returned_at: datetime | None = None
+
+    def __repr__(self) -> str:
+        return f"<Reservation(id={self.id}, book_id={self.book_id}, user_id={self.user_id})>"

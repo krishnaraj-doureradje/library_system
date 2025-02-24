@@ -23,7 +23,7 @@ router = APIRouter(dependencies=[Depends(user_is_authenticated)])
         "401": {"model": ErrorResponse},
         "500": {"model": ErrorResponse},
     },
-    summary="To create a book stock in the system.",
+    summary="To create a stock in the system.",
     tags=["Stocks"],
     status_code=HTTPResponseCode.CREATED,
 )

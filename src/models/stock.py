@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.models.pagination import Pagination
 
@@ -8,6 +8,7 @@ class StockBase(BaseModel):
 
     book_id: int = Field(..., gt=0, title="Book ID")
     stock_quantity: int = Field(..., ge=0, title="Number of stock to be added")
+    model_config = ConfigDict(json_schema_extra={"example": {"book_id": 6, "stock_quantity": 1}})
 
 
 class StockIn(StockBase):

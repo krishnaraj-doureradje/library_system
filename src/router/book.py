@@ -105,6 +105,7 @@ async def update_book(
     "/books/{book_id}",
     responses={
         "401": {"model": ErrorResponse},
+        "403": {"model": ErrorResponse},
         "500": {"model": ErrorResponse},
     },
     status_code=HTTPResponseCode.NO_CONTENT,

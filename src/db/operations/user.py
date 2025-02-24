@@ -83,7 +83,7 @@ def get_users_with_offset_and_limit(
     users_count_stmt = get_user_count_stmt()
     users_count = fetch_one_or_none(db_session, users_count_stmt)  # type: ignore
 
-    # There is nothing to fetch if the authors_count is None
+    # There is nothing to fetch if the users_count is None
     if users_count is None:
         return UsersList(
             users=[],
@@ -128,7 +128,7 @@ def update_user_on_db(db_session: db_dependency, user_id: int, user_in: UserIn) 
     """
     db_user = get_user_from_id(db_session, user_id)
 
-    # Update the author fields with the new values
+    # Update the user's fields with the new values
     for field, value in user_in.model_dump().items():
         setattr(db_user, field, value)
 

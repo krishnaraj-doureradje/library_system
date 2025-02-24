@@ -203,7 +203,7 @@ def get_reservations_with_offset_and_limit(
     reservations_count_stmt = get_reservations_count_stmt()
     reservation_count = fetch_one_or_none(db_session, reservations_count_stmt)  # type: ignore
 
-    # There is nothing to fetch if the authors_count is None
+    # There is nothing to fetch if the reservation_count is None
     if reservation_count is None:
         return ReservationsList(
             reservation=[],
@@ -249,7 +249,7 @@ def get_reservations_with_offset_and_limit(
 def update_reservation_on_db(
     db_session: db_dependency, reservation_id: int, reservation_in: ReservationIn
 ) -> ReservationOut:
-    """Update an reservation based on the user_id and book_id.
+    """Update an reservation based on the reservation_id, user_id and book_id.
 
     Args:
         db_session (db_dependency): Database session.
@@ -278,10 +278,12 @@ def update_reservation_on_db(
     reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status
     reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
+
+    # Update db with return date and status
     reservation.returned_at = datetime.now()
     reservation.status_id = reservation_status[ReservationStatus.RETURNED.value]
 
-    # Refresh the object after commit to get the primary key
+    # Refresh reservation and stock object
     execute_all_query(
         db_session, [reservation, stock], is_commit=True, is_refresh_after_commit=True
     )
@@ -321,7 +323,8 @@ def verify_reservation(
         raise ReservationException(
             status_code=HTTPResponseCode.BAD_REQUEST,
             message=(
-                f"Book not borrowed or user not found {book_id=}, {user_id=}, {reservation_id=}"
+                f"Book not borrowed | user or reservation not found {book_id=}, "
+                f"{user_id=}, {reservation_id=}"
             ),
         )
 

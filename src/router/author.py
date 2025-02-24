@@ -115,7 +115,7 @@ async def update_author(
     status_code=HTTPResponseCode.NO_CONTENT,
     summary=(
         "To delete an author and a book based on the author ID,"
-        "if the author's books are not available in stock."
+        "if the author's books are not available in the stock."
     ),
     tags=["Authors"],
 )
