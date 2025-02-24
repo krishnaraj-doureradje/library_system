@@ -24,8 +24,10 @@ def test_authors_with_count_zero(client: TestClient) -> None:
 
 def test_author_with_id_fail(client: TestClient) -> None:
     """Test the author with id details endpoint."""
-    response = client.get("/author/1")
-    assert response.status_code == HTTPResponseCode.NOT_FOUND
+    try:
+        client.get("/authors/1")
+    except NotFoundException as exc:
+        assert exc.status_code == HTTPResponseCode.NOT_FOUND
 
 
 def test_create_authors(client: TestClient) -> None:

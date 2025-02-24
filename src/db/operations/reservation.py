@@ -206,7 +206,7 @@ def get_reservations_with_offset_and_limit(
     # There is nothing to fetch if the reservation_count is None
     if reservation_count is None:
         return ReservationsList(
-            reservation=[],
+            reservations=[],
             number_of_reservation=0,
             number_of_pages=0,
             current_page=0,
@@ -237,7 +237,7 @@ def get_reservations_with_offset_and_limit(
     )
 
     return ReservationsList(
-        reservation=reservations,
+        reservations=reservations,
         number_of_reservation=reservation_count,
         number_of_pages=number_of_pages,
         current_page=current_page,

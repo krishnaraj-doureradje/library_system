@@ -34,4 +34,4 @@ class ReservationsList(Pagination):
     """Pydantic model to represent a list of reservations."""
 
     number_of_reservation: int = Field(..., description="Total number of reservations")
-    reservation: list[ReservationOut] = Field(..., description="List of reservations")
+    reservations: list[ReservationOut] = Field(..., description="List of reservations")
