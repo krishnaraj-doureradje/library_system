@@ -1,6 +1,11 @@
+import logging
+from contextlib import contextmanager
 from datetime import datetime, timedelta
+from functools import lru_cache
 
-from src.db.engine import db_dependency
+from sqlalchemy.exc import SQLAlchemyError
+
+from src.db.engine import db_dependency, get_db_session
 from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.reservation import Reservation
 from src.db.models.stock import Stock
@@ -19,6 +24,8 @@ from src.helper.pagination import pagination_details
 from src.models.http_response_code import HTTPResponseCode
 from src.models.reservation import ReservationIn, ReservationOut, ReservationsList
 from src.models.reservation_status import ReservationStatus
+
+logger = logging.getLogger("app")
 
 
 def create_reservation_on_db(
@@ -39,9 +46,7 @@ def create_reservation_on_db(
     stock.stock_quantity -= 1
 
     # Get reservation status
-    reservation_status = {
-        value: key for key, value in get_reservation_status_dict(db_session).items()
-    }
+    reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
 
     new_reservation = Reservation(
         book_id=reservation_in.book_id,
@@ -169,7 +174,7 @@ def get_reservation_out_from_db(db_session: db_dependency, reservation_id: int) 
     """
     db_reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status
-    reservation_status = get_reservation_status_dict(db_session)
+    reservation_status = get_reservation_status_dict()
 
     return ReservationOut(
         id=db_reservation.id,  # type: ignore
@@ -210,7 +215,7 @@ def get_reservations_with_offset_and_limit(
         )
 
     # Get reservation status
-    reservation_status = get_reservation_status_dict(db_session)
+    reservation_status = get_reservation_status_dict()
 
     reservations_stmt = get_reservations_stmt_with_limit_and_offset(offset=offset, limit=limit)
     reservations: list[ReservationOut] = []
@@ -272,9 +277,7 @@ def update_reservation_on_db(
 
     reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status
-    reservation_status = {
-        value: key for key, value in get_reservation_status_dict(db_session).items()
-    }
+    reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
     reservation.returned_at = datetime.now()
     reservation.status_id = reservation_status[ReservationStatus.RETURNED.value]
 
@@ -323,18 +326,22 @@ def verify_reservation(
         )
 
 
-def get_reservation_status_dict(db_session: db_dependency) -> dict[int, str]:
+@lru_cache
+def get_reservation_status_dict() -> dict[int, str]:
     """Get reservation status as dict format.
-
-    Args:
-        db_session (db_dependency): Database session.
 
     Returns:
         dict[int, str]: Return reservation status
     """
     reservation_status_stmt = get_reservation_status_stmt()
-    reservation_status: dict[int, str] = {
-        reservation.id: reservation.name  # type: ignore
-        for reservation in fetch_all(db_session, reservation_status_stmt)
-    }
+    try:
+        with contextmanager(get_db_session)() as session:
+            reservation_status: dict[int, str] = {
+                reservation.id: reservation.name  # type: ignore
+                for reservation in fetch_all(session, reservation_status_stmt)
+            }
+    except SQLAlchemyError as e:
+        logger.error(f"Failed to verify database connection: {str(e)}")
+        raise
+
     return reservation_status

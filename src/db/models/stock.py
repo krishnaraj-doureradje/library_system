@@ -9,7 +9,7 @@ class Stock(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True, index=True, nullable=False)
     book_id: int = Field(foreign_key="books.id", index=True, nullable=False, unique=True)
-    stock_quantity: int = Field(default=0, nullable=False)
+    stock_quantity: int = Field(default=0, nullable=False, ge=0)
     created_at: datetime = Field(
         sa_column=Column(
             DateTime,
