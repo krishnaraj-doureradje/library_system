@@ -1,10 +1,10 @@
 from typing import Any
 
-from constant import COUNT_ONE, COUNT_TWO, COUNT_ZERO
 from fastapi.testclient import TestClient
 
 from src.exceptions.app import NotFoundException, SqlException
 from src.models.http_response_code import HTTPResponseCode
+from tests.integration.constant import COUNT_ONE, COUNT_TWO, COUNT_ZERO
 
 author: dict[str, Any] = {
     "birth_date": "1980-05-15",
@@ -96,3 +96,16 @@ def test_author_delete_endpoint(client: TestClient) -> None:  # noqa: PLR0915
         client.get("/authors/2")
     except NotFoundException as exc:
         assert exc.status_code == HTTPResponseCode.NOT_FOUND
+
+
+def test_create_five_authors(client: TestClient) -> None:
+    """Test creation of author endpoint."""
+
+    # For the future testings
+    for i in range(1, 6):
+        # Add second author
+        author_copy = author.copy()
+        author_copy["first_name"] = f"{author_copy['first_name'] + ' ' + str(i)}"
+        author_copy["last_name"] = f"{author_copy['last_name'] + ' ' + str(i)}"
+        response = client.post("/authors", json=author_copy)
+        assert response.status_code == HTTPResponseCode.CREATED

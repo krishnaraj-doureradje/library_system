@@ -97,3 +97,16 @@ def test_book_delete_endpoint(client: TestClient) -> None:  # noqa: PLR0915
         client.get("/books/2")
     except NotFoundException as exc:
         assert exc.status_code == HTTPResponseCode.NOT_FOUND
+
+
+def test_create_five_books(client: TestClient) -> None:
+    """Test creation of books endpoint."""
+    # For the future testings
+    for i in range(1, 6):
+        # Add second author
+        book_copy = book.copy()
+        book_copy["title"] = f"{book_copy['title'] + ' ' + str(i)}"
+        book_copy["category"] = f"{book_copy['category'] + ' ' + str(i)}"
+        book_copy["author_id"] = i
+        response = client.post("/books", json=book_copy)
+        assert response.status_code == HTTPResponseCode.CREATED
