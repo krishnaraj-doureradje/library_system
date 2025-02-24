@@ -1,6 +1,6 @@
 #checkov:skip=CKV_DOCKER_2: Healthchecks are not the responsibility of Docker, we have ECS/ELB for that
 # Build image
-FROM python:3.11.9-slim-bookworm as python-build
+FROM python:3.12.9-slim-bookworm as python-build
 RUN useradd -m nonrootuser
 ENV PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
@@ -21,10 +21,10 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
     && poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml ./
 RUN . $VENV_PATH/bin/activate \
-    && poetry install --no-interaction --no-ansi --only main -vvv
+    && poetry install --no-interaction --no-ansi --no-root --only main -vvv
 
 # Runtime image
-FROM python:3.11.9-slim-bookworm as runtime
+FROM python:3.12.9-slim-bookworm as runtime
 RUN useradd -m nonrootuser
 ENV VENV_PATH=/home/nonrootuser/venv \
     PATH="/home/nonrootuser/venv/bin:$PATH" \

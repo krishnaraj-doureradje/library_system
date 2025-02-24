@@ -49,7 +49,7 @@ system users must be able to :
 - Manage stocks and reservations"""
 
 app = FastAPI(
-    title="Create a simple application to manage municipal library system.",
+    title="Application to manage municipal library system.",
     description=description,
     lifespan=lifespan,
 )
