@@ -32,7 +32,7 @@ def test_add_stocks(client: TestClient) -> None:
     for book in book_responses_json["books"]:
         stock: dict[str, Any] = {"book_id": book["id"], "stock_quantity": 10}
         stock_response = client.post("/stocks", json=stock)
-        print(stock_response)
+        assert stock_response.status_code == HTTPResponseCode.CREATED
 
 
 def test_add_stock_fail(client: TestClient) -> None:
