@@ -8,18 +8,20 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.db.engine import db_dependency, get_db_session
 from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none, update_statement
 from src.db.models.reservation import Reservation
-from src.db.query import (
-    get_decrement_stock_quantity_stmt,
-    get_increment_stock_quantity_stmt,
+from src.db.queries.reservation import (
     get_non_returned_books_from_user_id_stmt,
     get_reservation_books_from_id_stmt,
     get_reservation_from_id_stmt,
-    get_reservation_status_stmt,
     get_reservations_count_stmt,
     get_reservations_stmt_with_limit_and_offset,
-    get_stock_book_stmt,
-    get_user_from_id_stmt,
 )
+from src.db.queries.reservation_status import get_reservation_status_stmt
+from src.db.queries.stock import (
+    get_decrement_stock_quantity_stmt,
+    get_increment_stock_quantity_stmt,
+    get_stock_book_stmt,
+)
+from src.db.queries.user import get_user_from_id_stmt
 from src.exceptions.app import NotFoundException, ReservationException
 from src.helper.pagination import pagination_details
 from src.models.http_response_code import HTTPResponseCode

@@ -1,12 +1,10 @@
 from src.db.engine import db_dependency
 from src.db.execution import delete_statement, execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.author import Author
-from src.db.query import (
-    delete_author_from_id_stmt,
+from src.db.queries.admin_user import get_author_count_stmt, get_authors_stmt_with_limit_and_offset
+from src.db.queries.author import delete_author_from_id_stmt, get_author_stmt
+from src.db.queries.book import (
     delete_book_from_id_stmt,
-    get_author_count_stmt,
-    get_author_stmt,
-    get_authors_stmt_with_limit_and_offset,
 )
 from src.exceptions.app import NotFoundException, SqlException
 from src.helper.pagination import pagination_details

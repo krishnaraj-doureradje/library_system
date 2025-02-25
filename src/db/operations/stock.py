@@ -1,7 +1,7 @@
 from src.db.engine import db_dependency
 from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.stock import Stock
-from src.db.query import (
+from src.db.queries.stock import (
     get_stock_book_stmt,
     get_stocks_count_stmt,
     get_stocks_stmt_with_limit_and_offset,
