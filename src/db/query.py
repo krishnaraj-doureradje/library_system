@@ -1,4 +1,4 @@
-from sqlalchemy import Delete, and_, delete, func
+from sqlalchemy import Delete, Update, and_, delete, func, update
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
@@ -292,5 +292,39 @@ def get_reservation_books_from_id_stmt(
             Reservation.book_id == book_id,  # type: ignore
             Reservation.returned_at.is_(None),  # type: ignore
         )
+    )
+    return stmt
+
+
+def get_decrement_stock_quantity_stmt(book_id: int) -> Update:
+    """This function return update stock quantity statement.
+
+    Args:
+        book_id (int): Stock quantity to be decremented
+
+    Returns:
+         Update: Update statement
+    """
+    stmt = (
+        update(Stock)
+        .where(Stock.book_id == book_id)  # type: ignore
+        .values(stock_quantity=Stock.stock_quantity - 1)
+    )
+    return stmt
+
+
+def get_increment_stock_quantity_stmt(book_id: int) -> Update:
+    """This function return update stock quantity statement.
+
+    Args:
+        book_id (int): Stock quantity to be incremented.
+
+    Returns:
+         Update: Update statement
+    """
+    stmt = (
+        update(Stock)
+        .where(Stock.book_id == book_id)  # type: ignore
+        .values(stock_quantity=Stock.stock_quantity + 1)
     )
     return stmt
