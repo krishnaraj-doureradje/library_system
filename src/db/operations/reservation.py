@@ -6,10 +6,11 @@ from functools import lru_cache
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.db.engine import db_dependency, get_db_session
-from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
+from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none, update_statement
 from src.db.models.reservation import Reservation
-from src.db.models.stock import Stock
 from src.db.query import (
+    get_decrement_stock_quantity_stmt,
+    get_increment_stock_quantity_stmt,
     get_non_returned_books_from_user_id_stmt,
     get_reservation_books_from_id_stmt,
     get_reservation_from_id_stmt,
@@ -41,10 +42,11 @@ def create_reservation_on_db(
         ReservationOut: Reservation details with ID
     """
     verify_user_and_reservation(db_session, reservation_in)
-    stock = get_stock_details(db_session, reservation_in.book_id)
-    # Reduce stock after the reservations
-    stock.stock_quantity -= 1
+    verify_stock_quantity_for_reservation(db_session, reservation_in.book_id)
 
+    # Decrement stock quantity by one and commit it later
+    decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
     # Get reservation status
     reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
 
@@ -58,7 +60,12 @@ def create_reservation_on_db(
     )
     # Refresh the object after commit to get the primary key
     execute_all_query(
-        db_session, [new_reservation, stock], is_commit=True, is_refresh_after_commit=True
+        db_session,
+        [
+            new_reservation,
+        ],
+        is_commit=True,
+        is_refresh_after_commit=True,
     )
     return ReservationOut(
         id=new_reservation.id,  # type: ignore
@@ -105,15 +112,12 @@ def verify_user_and_reservation(db_session: db_dependency, reservation_in: Reser
         )
 
 
-def get_stock_details(db_session: db_dependency, book_id: int) -> Stock:
-    """To get stock details from book_id, it's available for assignment.
+def verify_stock_quantity_for_reservation(db_session: db_dependency, book_id: int) -> None:
+    """To verify stock details from book_id, it's available for assignment.
 
     Args:
         db_session (db_dependency): Database session.
         book_id (int): Book ID
-
-    Returns:
-        Stock: Stock details
 
     Raises:
         NotFoundException: Item not found in the databases
@@ -133,8 +137,6 @@ def get_stock_details(db_session: db_dependency, book_id: int) -> Stock:
             status_code=HTTPResponseCode.BAD_REQUEST,
             message=f"{book_id=} not available for reservations",
         )
-
-    return stock
 
 
 def get_reservations_from_user_id(db_session: db_dependency, reservation_id: int) -> Reservation:
@@ -246,7 +248,7 @@ def get_reservations_with_offset_and_limit(
     )
 
 
-def update_reservation_on_db(
+def update_reservation_on_db(  # noqa: PLR0915
     db_session: db_dependency, reservation_id: int, reservation_in: ReservationIn
 ) -> ReservationOut:
     """Update an reservation based on the reservation_id, user_id and book_id.
@@ -272,8 +274,9 @@ def update_reservation_on_db(
             status_code=HTTPResponseCode.NOT_FOUND,
             message=f"{reservation_in.book_id=} not found in the database",
         )
-    # Increase stock after return
-    stock.stock_quantity += 1
+    # Increase stock after return and commit it later
+    increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
 
     reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status

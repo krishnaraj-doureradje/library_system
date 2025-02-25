@@ -1,7 +1,7 @@
 import logging
 from typing import Sequence, TypeVar
 
-from sqlalchemy import Delete
+from sqlalchemy import Delete, Update
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlmodel import SQLModel
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
@@ -136,6 +136,33 @@ def delete_statement(
     Args:
         db_session (db_dependency): The database session to use for executing the query.
         stmt (Delete): The SQLAlchemy delete statement to execute.
+        is_commit (bool, optional): Whether to commit the transaction after executing
+                                    the statement. Defaults to True.
+
+    Raises:
+        SqlException: Raised when a database error occurs.
+    """
+    try:
+        db_session.exec(stmt)  # type: ignore
+
+        if is_commit:
+            db_session.commit()
+
+    except (IntegrityError, OperationalError, SQLAlchemyError) as exc:
+        handle_db_exception(db_session, exc)
+
+
+def update_statement(
+    db_session: db_dependency,
+    stmt: Update,
+    *,
+    is_commit: bool = True,
+) -> None:
+    """Executes a Update statement in the database.
+
+    Args:
+        db_session (db_dependency): The database session to use for executing the query.
+        stmt (Update): The SQLAlchemy Update statement to execute.
         is_commit (bool, optional): Whether to commit the transaction after executing
                                     the statement. Defaults to True.
 
