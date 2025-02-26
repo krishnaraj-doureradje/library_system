@@ -53,3 +53,16 @@ def delete_book_from_id_stmt(book_id: int) -> Delete:
     """
     stmt = delete(Book).where(Book.id == book_id)  # type: ignore
     return stmt
+
+
+def delete_books_from_author_id_stmt(author_id: int) -> Delete:
+    """This function return delete book statement by using author_id.
+
+    Args:
+        author_id (int): Author id to be deleted
+
+    Returns:
+         Delete: Delete statement
+    """
+    stmt = delete(Book).where(Book.author_id == author_id)  # type: ignore
+    return stmt
