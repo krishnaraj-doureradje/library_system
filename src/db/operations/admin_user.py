@@ -1,7 +1,7 @@
 from src.db.engine import db_dependency
 from src.db.execution import fetch_one_or_none
 from src.db.models.admin_user import AdminUser
-from src.db.query import (
+from src.db.queries.admin_user import (
     get_admin_user_stmt,
 )
 

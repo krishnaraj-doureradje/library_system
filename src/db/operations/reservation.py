@@ -8,18 +8,20 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.db.engine import db_dependency, get_db_session
 from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none, update_statement
 from src.db.models.reservation import Reservation
-from src.db.query import (
-    get_decrement_stock_quantity_stmt,
-    get_increment_stock_quantity_stmt,
+from src.db.queries.reservation import (
     get_non_returned_books_from_user_id_stmt,
     get_reservation_books_from_id_stmt,
     get_reservation_from_id_stmt,
-    get_reservation_status_stmt,
     get_reservations_count_stmt,
     get_reservations_stmt_with_limit_and_offset,
-    get_stock_book_stmt,
-    get_user_from_id_stmt,
 )
+from src.db.queries.reservation_status import get_reservation_status_stmt
+from src.db.queries.stock import (
+    get_decrement_stock_quantity_stmt,
+    get_increment_stock_quantity_stmt,
+    get_stock_book_stmt,
+)
+from src.db.queries.user import get_user_from_id_stmt
 from src.exceptions.app import NotFoundException, ReservationException
 from src.helper.pagination import pagination_details
 from src.models.http_response_code import HTTPResponseCode
@@ -44,9 +46,6 @@ def create_reservation_on_db(
     verify_user_and_reservation(db_session, reservation_in)
     verify_stock_quantity_for_reservation(db_session, reservation_in.book_id)
 
-    # Decrement stock quantity by one and commit it later
-    decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
-    update_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
     # Get reservation status
     reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
 
@@ -58,6 +57,10 @@ def create_reservation_on_db(
         borrowed_at=datetime.now(),
         returned_at=None,
     )
+    # Decrement stock quantity by one and commit it the execute_all_query
+    decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
+
     # Refresh the object after commit to get the primary key
     execute_all_query(
         db_session,
@@ -274,9 +277,6 @@ def update_reservation_on_db(  # noqa: PLR0915
             status_code=HTTPResponseCode.NOT_FOUND,
             message=f"{reservation_in.book_id=} not found in the database",
         )
-    # Increase stock after return and commit it later
-    increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
-    update_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
 
     reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status
@@ -285,6 +285,10 @@ def update_reservation_on_db(  # noqa: PLR0915
     # Update db with return date and status
     reservation.returned_at = datetime.now()
     reservation.status_id = reservation_status[ReservationStatus.RETURNED.value]
+
+    # Increase stock after return and commit it below in the execute_all_query
+    increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
 
     # Refresh reservation and stock object
     execute_all_query(

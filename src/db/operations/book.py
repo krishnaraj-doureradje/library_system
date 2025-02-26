@@ -1,7 +1,7 @@
 from src.db.engine import db_dependency
 from src.db.execution import delete_statement, execute_all_query, fetch_all, fetch_one_or_none
 from src.db.models.book import Book
-from src.db.query import (
+from src.db.queries.book import (
     delete_book_from_id_stmt,
     get_book_count_stmt,
     get_book_from_id_stmt,

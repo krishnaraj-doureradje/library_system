@@ -1,7 +1,8 @@
 from src.db.engine import db_dependency
-from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none
+from src.db.execution import execute_all_query, fetch_all, fetch_one_or_none, update_statement
 from src.db.models.stock import Stock
-from src.db.query import (
+from src.db.queries.stock import (
+    get_add_new_stock_quantity_stmt,
     get_stock_book_stmt,
     get_stocks_count_stmt,
     get_stocks_stmt_with_limit_and_offset,
@@ -157,9 +158,11 @@ def add_new_quantity_to_the_existing_stocks_on_db(
     Returns:
         StockOut: Updated stock details.
     """
+    # Update stock quantity and commit it, then obtain stock details.
+    add_new_stock_quantity_stmt = get_add_new_stock_quantity_stmt(book_id, stock_in.stock_quantity)
+    update_statement(db_session, add_new_stock_quantity_stmt)
+
     db_stock = get_stock_book_from_id(db_session, book_id)
-    # Add new quantity to the stocks
-    db_stock.stock_quantity += stock_in.stock_quantity
 
     stock_data = db_stock.model_dump()
     book_data = db_stock.book.model_dump()
