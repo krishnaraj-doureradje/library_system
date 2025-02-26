@@ -174,10 +174,4 @@ def add_new_quantity_to_the_existing_stocks_on_db(
         title=book_data["title"],
         category=book_data["category"],
     )
-    # We don't need to refresh the object for the update operation, so we can avoid
-    # making a select request to the database.
-    execute_all_query(
-        db_session,
-        [db_stock],  # type: ignore
-    )
     return stock_out
