@@ -74,3 +74,21 @@ def get_increment_stock_quantity_stmt(book_id: int) -> Update:
         .values(stock_quantity=Stock.stock_quantity + 1)
     )
     return stmt
+
+
+def get_add_new_stock_quantity_stmt(book_id: int, stock_quantity: int) -> Update:
+    """This function return update stock quantity statement.
+
+    Args:
+        book_id (int): Book id.
+        stock_quantity (int): Quantity of stock to add to existing quantity.
+
+    Returns:
+         Update: Update statement
+    """
+    stmt = (
+        update(Stock)
+        .where(Stock.book_id == book_id)  # type: ignore
+        .values(stock_quantity=Stock.stock_quantity + stock_quantity)
+    )
+    return stmt
