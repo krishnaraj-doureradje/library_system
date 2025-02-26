@@ -46,9 +46,6 @@ def create_reservation_on_db(
     verify_user_and_reservation(db_session, reservation_in)
     verify_stock_quantity_for_reservation(db_session, reservation_in.book_id)
 
-    # Decrement stock quantity by one and commit it later
-    decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
-    update_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
     # Get reservation status
     reservation_status = {value: key for key, value in get_reservation_status_dict().items()}
 
@@ -60,6 +57,10 @@ def create_reservation_on_db(
         borrowed_at=datetime.now(),
         returned_at=None,
     )
+    # Decrement stock quantity by one and commit it the execute_all_query
+    decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
+
     # Refresh the object after commit to get the primary key
     execute_all_query(
         db_session,
@@ -276,9 +277,6 @@ def update_reservation_on_db(  # noqa: PLR0915
             status_code=HTTPResponseCode.NOT_FOUND,
             message=f"{reservation_in.book_id=} not found in the database",
         )
-    # Increase stock after return and commit it later
-    increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
-    update_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
 
     reservation = get_reservations_from_user_id(db_session, reservation_id)
     # Get reservation status
@@ -287,6 +285,10 @@ def update_reservation_on_db(  # noqa: PLR0915
     # Update db with return date and status
     reservation.returned_at = datetime.now()
     reservation.status_id = reservation_status[ReservationStatus.RETURNED.value]
+
+    # Increase stock after return and commit it below in the execute_all_query
+    increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
+    update_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
 
     # Refresh reservation and stock object
     execute_all_query(
