@@ -16,7 +16,7 @@ security = HTTPBasic()
 
 
 def hash_password(password: str) -> str:
-    """Hash a plain-text password securely using bcrypt.
+    """Hash a plain-text password securely using hashlib.
 
     Args:
         password (str): Plain-text password (must not be empty)
@@ -55,7 +55,7 @@ def user_is_authenticated(
 
     Args:
         credentials (Annotated[HTTPBasicCredentials, Depends): Basic credentials
-        db_session (db_dependency): Database session.q
+        db_session (db_dependency): Database session.
 
     Raises:
         AuthenticationException: Raise exception if it's not a valid username or password

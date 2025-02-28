@@ -182,7 +182,7 @@ Two tools are installed in the project.
 ## Tests
 I've added unit and integration test code to test the application's behavior, which is very useful for detecting bugs in the code before it goes into production.
 
-> These tests use in-memory databases, so no files are created at runtime. At the end of the test, these DB are automatically deleted.
+> These tests create a new test.db file at runtime. At the end of the test, these DB are automatically deleted.
 
 ```shell
 $ pytest tests     

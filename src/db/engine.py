@@ -6,6 +6,8 @@ from sqlalchemy.pool import QueuePool, StaticPool
 from sqlmodel import Session, create_engine
 from typing_extensions import Self
 
+from src.config.config import APP_CONFIG
+
 
 class DatabaseEngine:
     """Singleton class for database connection."""
@@ -43,8 +45,7 @@ class DatabaseEngine:
         """Get or create the engine for test DB."""
         if self._test_engine is None:
             self._test_engine = create_engine(
-                "sqlite://",
-                connect_args={"check_same_thread": False},
+                f"sqlite:///{APP_CONFIG['testing_db']['file']}",
                 poolclass=StaticPool,
             )
 
