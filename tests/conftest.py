@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Iterator
 
 import pytest
 from alembic import command
@@ -26,7 +27,7 @@ def get_alembic_path() -> str:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db():
+def setup_db() -> Iterator:  # type: ignore
     """Fixture to setup the database for testing."""
     remove_test_db_file()
 
@@ -44,13 +45,13 @@ def setup_db():
     remove_test_db_file()
 
 
-def remove_test_db_file():
+def remove_test_db_file() -> None:
     """Remove test db file."""
     if os.path.exists(APP_CONFIG["testing_db"]["file"]):
         os.remove(APP_CONFIG["testing_db"]["file"])
 
 
-def delete_data_from_tables():
+def delete_data_from_tables() -> None:
     """Delete the data."""
     session = next(get_db_test_session())
     session.execute(text("DELETE FROM reservations;"))
@@ -62,7 +63,7 @@ def delete_data_from_tables():
     session.close()
 
 
-def mock_user_is_authenticated():
+def mock_user_is_authenticated() -> None:
     return None
 
 
