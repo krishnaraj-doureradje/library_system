@@ -37,5 +37,5 @@ class Author(SQLModel, table=True):
         UniqueConstraint("first_name", "last_name", "birth_date", name="uq_author_name_birthdate"),
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Author(id={self.id}, name={self.first_name} {self.last_name})>"

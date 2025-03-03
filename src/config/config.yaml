@@ -8,6 +8,9 @@ authentication:
   basic:
     enable: {{env.get('BASIC_AUTH_ENABLE', True)}} 
 
+testing_db:
+  file: test.db
+
 logging:
   version: 1
   disable_existing_loggers: false
