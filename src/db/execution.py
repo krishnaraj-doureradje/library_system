@@ -125,9 +125,9 @@ def delete_all_query(
         handle_db_exception(db_session, exc)
 
 
-def execute_statement(
+def execute_statements(
     db_session: db_dependency,
-    stmt: Delete | Update,
+    stmts: list[Delete | Update],
     *,
     is_commit: bool = True,
 ) -> None:
@@ -135,7 +135,7 @@ def execute_statement(
 
     Args:
         db_session (db_dependency): The database session to use for executing the query.
-        stmt (Delete | Update): The SQLAlchemy Delete or Update statement to execute.
+        stmts (list[Delete | Update]): The list of SQLAlchemy Delete or Update statement to execute.
         is_commit (bool, optional): Whether to commit the transaction after executing
                                     the statement. Defaults to True.
 
@@ -143,7 +143,8 @@ def execute_statement(
         SqlException: Raised when a database error occurs.
     """
     try:
-        db_session.exec(stmt)  # type: ignore
+        for stmt in stmts:
+            db_session.exec(stmt)  # type: ignore
 
         if is_commit:
             db_session.commit()

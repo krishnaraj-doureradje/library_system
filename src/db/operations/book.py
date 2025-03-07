@@ -1,5 +1,5 @@
 from src.db.engine import db_dependency
-from src.db.execution import execute_all_query, execute_statement, fetch_all, fetch_one_or_none
+from src.db.execution import execute_all_query, execute_statements, fetch_all, fetch_one_or_none
 from src.db.models.book import Book
 from src.db.queries.book import (
     delete_book_from_id_stmt,
@@ -167,4 +167,4 @@ def delete_book_on_db(
         )
 
     delete_books_stmt = delete_book_from_id_stmt(book_id)
-    execute_statement(db_session, delete_books_stmt, is_commit=True)
+    execute_statements(db_session, [delete_books_stmt], is_commit=True)
