@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class ReservationStatus(str, Enum):
+class ReservationStatus(StrEnum):
     """Enum representing the possible statuses of a reservation."""
 
     PENDING = "pending"

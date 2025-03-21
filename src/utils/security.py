@@ -67,18 +67,16 @@ def user_is_authenticated(
     password = credentials.password
 
     admin_user = get_admin_user(db_session, username)
+    auth_exception = AuthenticationException(
+        status_code=HTTPResponseCode.UNAUTHORIZED,
+        message="Incorrect username or password",
+    )
 
     if admin_user is None:
-        raise AuthenticationException(
-            status_code=HTTPResponseCode.UNAUTHORIZED,
-            message="Incorrect username or password",
-        )
+        raise auth_exception
 
     is_correct_username = secrets.compare_digest(username, admin_user.user_id)
     is_correct_password = verify_password(password, admin_user.password)
 
     if not (is_correct_username and is_correct_password):
-        raise AuthenticationException(
-            status_code=HTTPResponseCode.UNAUTHORIZED,
-            message="Incorrect username or password",
-        )
+        raise auth_exception

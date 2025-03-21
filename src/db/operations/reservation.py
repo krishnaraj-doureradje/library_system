@@ -3,10 +3,8 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import lru_cache
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from src.db.engine import db_dependency, get_db_session
-from src.db.execution import execute_all_query, execute_statement, fetch_all, fetch_one_or_none
+from src.db.execution import execute_all_query, execute_statements, fetch_all, fetch_one_or_none
 from src.db.models.reservation import Reservation
 from src.db.queries.reservation import (
     get_non_returned_books_from_user_id_stmt,
@@ -59,7 +57,7 @@ def create_reservation_on_db(
     )
     # Decrement stock quantity by one and commit it the execute_all_query
     decrement_stock_quantity_stmt = get_decrement_stock_quantity_stmt(reservation_in.book_id)
-    execute_statement(db_session, decrement_stock_quantity_stmt, is_commit=False)
+    execute_statements(db_session, [decrement_stock_quantity_stmt], is_commit=False)
 
     # Refresh the object after commit to get the primary key
     execute_all_query(
@@ -288,7 +286,7 @@ def update_reservation_on_db(  # noqa: PLR0915
 
     # Increase stock after return and commit it below in the execute_all_query
     increment_stock_quantity_stmt = get_increment_stock_quantity_stmt(reservation_in.book_id)
-    execute_statement(db_session, increment_stock_quantity_stmt, is_commit=False)
+    execute_statements(db_session, [increment_stock_quantity_stmt], is_commit=False)
 
     # Refresh reservation and stock object
     execute_all_query(
@@ -344,14 +342,11 @@ def get_reservation_status_dict() -> dict[int, str]:
         dict[int, str]: Return reservation status
     """
     reservation_status_stmt = get_reservation_status_stmt()
-    try:
-        with contextmanager(get_db_session)() as session:
-            reservation_status: dict[int, str] = {
-                reservation.id: reservation.name  # type: ignore
-                for reservation in fetch_all(session, reservation_status_stmt)
-            }
-    except SQLAlchemyError as e:
-        logger.error(f"Failed to verify database connection: {str(e)}")
-        raise
+
+    with contextmanager(get_db_session)() as session:
+        reservation_status: dict[int, str] = {
+            reservation.id: reservation.name  # type: ignore
+            for reservation in fetch_all(session, reservation_status_stmt)
+        }
 
     return reservation_status
