@@ -45,7 +45,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         bool: True if the plain-text password matches the hash, False otherwise.
     """
-    return hash_password(plain_password) == hashed_password
+    return secrets.compare_digest(hash_password(plain_password), hashed_password)
 
 
 def user_is_authenticated(
