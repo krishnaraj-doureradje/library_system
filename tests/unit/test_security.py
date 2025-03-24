@@ -1,6 +1,7 @@
 import pytest
 
 from src.constants.security import PASSWORD_MIN_LEN
+from src.exceptions.app import AuthenticationException
 from src.utils.security import hash_password, verify_password
 
 
@@ -14,7 +15,9 @@ def test_hash_password_valid() -> None:
 
 def test_hash_password_empty() -> None:
     """Fail password scenario"""
-    with pytest.raises(ValueError, match="Password must be at least 8 characters long"):
+    with pytest.raises(
+        AuthenticationException,
+    ):
         hash_password("")
         hash_password("short")
 
@@ -53,12 +56,16 @@ def test_verify_password_incorrect() -> None:
 def test_verify_password_empty() -> None:
     """Empty Password verification"""
     hashed = hash_password("somepassword")
-    with pytest.raises(ValueError, match="Password must be at least 8 characters long"):
+    with pytest.raises(
+        AuthenticationException,
+    ):
         verify_password("", hashed)
 
 
 def test_verify_password_too_short() -> None:
     """Check not a valid password"""
     hashed = hash_password("somepassword")
-    with pytest.raises(ValueError, match="Password must be at least 8 characters long"):
+    with pytest.raises(
+        AuthenticationException,
+    ):
         verify_password("short", hashed)

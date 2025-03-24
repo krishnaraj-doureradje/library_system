@@ -28,7 +28,10 @@ def hash_password(password: str) -> str:
         ValueError: If the password is empty or too short
     """
     if not password or len(password) < PASSWORD_MIN_LEN:
-        raise ValueError("Password must be at least 8 characters long")
+        raise AuthenticationException(
+            status_code=HTTPResponseCode.UNAUTHORIZED,
+            message="Password must be at least 8 characters long",
+        )
 
     sha256_hash = hashlib.sha256()
     sha256_hash.update(password.encode("utf-8"))
